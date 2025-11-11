@@ -18,6 +18,12 @@ def criar_usuario(nome, email, senha):
     try:
         supabase = database.conectar()
         
+        # Verificar se o email já existe
+        check = supabase.table('usuarios').select('id').eq('email', email).execute()
+        if check.data:
+            print(f"❌ Email '{email}' já está cadastrado!")
+            return False
+        
         # Criptografar senha
         senha_hash = bcrypt.hashpw(senha.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         
@@ -30,13 +36,16 @@ def criar_usuario(nome, email, senha):
         
         if response.data:
             user_id = response.data[0]['id']
+            print(f"✓ Usuário '{nome}' criado com ID: {user_id}")
             # Criar categorias padrão
             criar_categorias_padrao(user_id)
             return True
         return False
         
     except Exception as e:
-        print(f"Erro ao criar usuário: {e}")
+        print(f"❌ Erro ao criar usuário: {e}")
+        import traceback
+        traceback.print_exc()
         return False
 
 def autenticar(email, senha):
@@ -126,9 +135,14 @@ def criar_categorias_padrao(user_id):
     try:
         supabase = database.conectar()
         categorias = [{'usuario_id': user_id, **cat} for cat in categorias_padrao]
-        supabase.table('categorias').insert(categorias).execute()
+        response = supabase.table('categorias').insert(categorias).execute()
+        print(f"✓ {len(categorias_padrao)} categorias padrão criadas para usuário {user_id}")
+        return True
     except Exception as e:
-        print(f"Erro ao criar categorias padrão: {e}")
+        print(f"❌ Erro ao criar categorias padrão: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
 
 def criar_categoria(user_id, nome, tipo):
     """Cria uma nova categoria"""

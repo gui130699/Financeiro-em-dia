@@ -62,3 +62,7 @@ instance/
 dist/
 build/
 *.egg-info/
+
+teste_*.py
+listar_usuarios.py
+buscar_usuario.py
