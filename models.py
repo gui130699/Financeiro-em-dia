@@ -4,7 +4,9 @@ import database
 import bcrypt
 from datetime import datetime, timedelta
 from calendar import monthrange
+from dateutil.relativedelta import relativedelta
 import uuid
+import traceback
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
@@ -44,7 +46,7 @@ def criar_usuario(nome, email, senha):
         
     except Exception as e:
         print(f"❌ Erro ao criar usuário: {e}")
-        import traceback
+
         traceback.print_exc()
         return False
 
@@ -140,7 +142,7 @@ def criar_categorias_padrao(user_id):
         return True
     except Exception as e:
         print(f"❌ Erro ao criar categorias padrão: {e}")
-        import traceback
+
         traceback.print_exc()
         return False
 
@@ -217,7 +219,7 @@ def inserir_lancamento(user_id, tipo, categoria_id, descricao, valor, data, stat
         # Se for parcelado, criar todas as parcelas
         if eh_parcelado and total_parcelas and total_parcelas > 1:
             from datetime import datetime
-            from dateutil.relativedelta import relativedelta
+
             
             data_obj = datetime.strptime(data, '%Y-%m-%d')
             ids_criados = []
@@ -270,7 +272,7 @@ def inserir_lancamento(user_id, tipo, categoria_id, descricao, valor, data, stat
         
     except Exception as e:
         print(f"Erro ao inserir lançamento: {e}")
-        import traceback
+
         traceback.print_exc()
         return None
 
@@ -587,7 +589,7 @@ def listar_parcelados_pendentes(user_id):
         
     except Exception as e:
         print(f"Erro ao listar parcelados: {e}")
-        import traceback
+
         traceback.print_exc()
         return []
 
@@ -654,7 +656,7 @@ def quitar_parcelado_integral(user_id, numero_contrato, desconto=0):
         
     except Exception as e:
         print(f"Erro ao quitar parcelado integral: {e}")
-        import traceback
+
         traceback.print_exc()
         return False
 
@@ -744,7 +746,7 @@ def quitar_parcelas_selecionadas(user_id, contrato_id, parcelas_ids, desconto=0)
         
     except Exception as e:
         print(f"Erro ao quitar parcelas selecionadas: {e}")
-        import traceback
+
         traceback.print_exc()
         return False
 
@@ -899,7 +901,7 @@ def listar_parcelas_contrato(numero_contrato):
         
     except Exception as e:
         print(f"Erro ao listar parcelas: {e}")
-        import traceback
+
         traceback.print_exc()
         return []
 
@@ -972,7 +974,7 @@ def trazer_despesas_pendentes_mes_anterior(user_id, ano_destino, mes_destino):
         
     except Exception as e:
         print(f"Erro ao trazer despesas pendentes: {e}")
-        import traceback
+
         traceback.print_exc()
         return 0
 
@@ -1049,6 +1051,6 @@ def criar_lancamento_saldo_anterior(user_id, ano_destino, mes_destino):
         
     except Exception as e:
         print(f"Erro ao criar lançamento de saldo anterior: {e}")
-        import traceback
+
         traceback.print_exc()
         return False
