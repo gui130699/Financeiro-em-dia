@@ -515,4 +515,7 @@ def exportar_pdf():
 # ==================== EXECUTAR APLICAÇÃO ====================
 
 if __name__ == '__main__':
-    app.run(debug=True, host='127.0.0.1', port=5000)
+    # Usar porta e host apropriados para produção (Render) e desenvolvimento
+    port = int(os.environ.get('PORT', 5000))
+    debug = os.environ.get('DEBUG', 'True') == 'True'
+    app.run(debug=debug, host='0.0.0.0', port=port)
