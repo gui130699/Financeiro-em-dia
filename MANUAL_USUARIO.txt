@@ -1,0 +1,738 @@
+================================================================================
+                    FINANÇAS EM DIA - MANUAL DO USUÁRIO
+================================================================================
+
+Versão: 2.0
+Data: Novembro 2025
+Autor: Sistema de Controle Financeiro Pessoal
+
+================================================================================
+                              ÍNDICE
+================================================================================
+
+1. INTRODUÇÃO
+2. ACESSO AO SISTEMA
+3. FUNCIONALIDADES PRINCIPAIS
+   3.1. Home (Resumo Financeiro)
+   3.2. Lançamentos
+   3.3. Categorias
+   3.4. Contas Fixas
+   3.5. Contas Parceladas
+   3.6. Relatórios
+4. GUIA DETALHADO DE USO
+5. DICAS E BOAS PRÁTICAS
+6. SOLUÇÃO DE PROBLEMAS
+7. SUPORTE
+
+================================================================================
+                          1. INTRODUÇÃO
+================================================================================
+
+O "Finanças em Dia" é um sistema completo de controle financeiro pessoal que
+permite gerenciar suas receitas e despesas de forma simples e eficiente.
+
+PRINCIPAIS RECURSOS:
+- Controle de receitas e despesas
+- Categorização automática de lançamentos
+- Gestão de contas fixas recorrentes
+- Acompanhamento de parcelamentos
+- Relatórios financeiros detalhados
+- Visualização mensal com resumos
+- Controle de status (pago/pendente)
+- Transferência de saldos entre meses
+
+================================================================================
+                        2. ACESSO AO SISTEMA
+================================================================================
+
+2.1. PRIMEIRO ACESSO (REGISTRO)
+--------------------------------
+1. Acesse a página de registro
+2. Preencha os seguintes dados:
+   - Nome completo
+   - E-mail (será seu login)
+   - Senha (mínimo 6 caracteres)
+   - Confirmação de senha
+3. Clique em "Registrar"
+4. O sistema criará automaticamente categorias padrão para você
+
+CATEGORIAS PADRÃO CRIADAS:
+Receitas:
+- Salário
+- Freelance
+- Investimentos
+- Outros
+
+Despesas:
+- Alimentação
+- Transporte
+- Moradia
+- Saúde
+- Educação
+- Lazer
+- Vestuário
+- Outros
+
+2.2. LOGIN
+----------
+1. Acesse a página de login
+2. Digite seu e-mail
+3. Digite sua senha
+4. Marque "Lembrar credenciais" se desejar (opcional)
+5. Clique em "Entrar"
+
+2.3. LOGOUT
+-----------
+- Clique no botão "Sair" no menu superior a qualquer momento
+
+================================================================================
+                    3. FUNCIONALIDADES PRINCIPAIS
+================================================================================
+
+3.1. HOME (RESUMO FINANCEIRO)
+------------------------------
+
+DESCRIÇÃO:
+Tela inicial que apresenta um resumo completo das suas finanças do mês atual.
+
+O QUE VOCÊ VÊ:
+- Total de receitas do mês
+- Total de despesas do mês
+- Saldo atual (receitas - despesas)
+- Lista de lançamentos recentes
+- Possibilidade de navegar entre meses
+
+AÇÕES DISPONÍVEIS:
+- Visualizar resumo de qualquer mês/ano
+- Ver lançamentos recentes
+- Acesso rápido a outras funcionalidades
+
+================================================================================
+
+3.2. LANÇAMENTOS
+----------------
+
+DESCRIÇÃO:
+Área principal onde você registra e gerencia todas as suas movimentações
+financeiras (receitas e despesas).
+
+3.2.1. CRIAR NOVO LANÇAMENTO
+-----------------------------
+
+CAMPOS DO FORMULÁRIO:
+- Data: Data do lançamento
+- Categoria: Selecione a categoria (o tipo receita/despesa é automático)
+- Valor: Valor em R$ (ex: 150.50)
+- Descrição: Descrição do lançamento (ex: "Supermercado")
+- Parcelas: Número de parcelas (1 para lançamento único)
+- Conta Fixa: Marque se for uma despesa/receita recorrente mensal
+- Dia Vencimento: Dia do mês para contas fixas (1-31)
+- Observação: Notas adicionais (opcional)
+
+IMPORTANTE:
+- O tipo (receita/despesa) é definido automaticamente pela categoria escolhida
+- Se marcar "Conta Fixa", a despesa será gerada automaticamente todo mês
+- Se informar mais de 1 parcela, criará lançamentos parcelados
+
+3.2.2. FERRAMENTAS DE LANÇAMENTOS
+----------------------------------
+
+A) SELETOR DE MÊS/ANO
+   - Permite visualizar lançamentos de qualquer período
+   - Use os campos de mês e ano e clique em "OK"
+
+B) GERAR CONTAS FIXAS
+   - Gera automaticamente todos os lançamentos de contas fixas do mês
+   - Útil no início de cada mês
+   - Não duplica lançamentos já existentes
+
+C) TRAZER SALDO ANTERIOR
+   - Calcula o saldo do mês anterior
+   - Cria um lançamento no dia 1 do mês atual com esse valor
+   - Se saldo positivo: cria receita "Saldo do mês X/Y"
+   - Se saldo negativo: cria despesa "Déficit do mês X/Y"
+
+D) TRAZER DESPESAS PENDENTES
+   - Move TODAS as despesas e receitas pendentes do mês anterior
+   - Remove os registros originais do mês anterior
+   - Adiciona nota indicando o mês de origem
+   - Útil para não perder pagamentos pendentes
+
+E) FILTROS
+   - Por categoria: Filtra por categoria específica
+   - Por status: Pendente, Pago, Todos
+   - Por descrição: Busca texto na descrição
+
+3.2.3. AÇÕES EM LANÇAMENTOS
+----------------------------
+
+Para cada lançamento, você pode:
+
+A) ALTERNAR STATUS (ícone ↻)
+   - Alterna entre "Pendente" e "Pago"
+   - Clique para marcar como pago ou desfazer
+   - Confirme a alteração
+
+B) EDITAR (ícone lápis)
+   - Permite alterar todos os dados do lançamento
+   - Data, categoria, valor, descrição, observação
+   - O tipo é atualizado conforme a nova categoria
+
+C) EXCLUIR (ícone lixeira)
+   - Remove o lançamento permanentemente
+   - Confirme antes de excluir
+   - ATENÇÃO: Esta ação não pode ser desfeita
+
+================================================================================
+
+3.3. CATEGORIAS
+---------------
+
+DESCRIÇÃO:
+Gerencie suas categorias de receitas e despesas. As categorias organizam
+seus lançamentos e facilitam a análise de gastos.
+
+3.3.1. CRIAR NOVA CATEGORIA
+----------------------------
+
+CAMPOS:
+- Nome: Nome da categoria (ex: "Netflix")
+- Tipo: Receita ou Despesa
+
+DICAS:
+- Crie categorias específicas para melhor controle
+- Exemplos de despesas: "Streaming", "Academia", "Pets"
+- Exemplos de receitas: "Bonificação", "Dividendos", "Aluguel Recebido"
+
+3.3.2. EDITAR CATEGORIA
+------------------------
+
+COMO FAZER:
+1. Localize a categoria na lista
+2. Clique no botão amarelo (lápis) ao lado da categoria
+3. Modal será aberto
+4. Altere o nome e/ou tipo
+5. Clique em "Salvar"
+
+OBSERVAÇÃO:
+- Ao mudar o tipo, todos os lançamentos dessa categoria também mudam
+
+3.3.3. EXCLUIR CATEGORIA
+-------------------------
+
+COMO FAZER:
+1. Localize a categoria na lista
+2. Clique no botão vermelho (lixeira)
+3. Confirme a exclusão
+
+ATENÇÃO:
+- Não é possível excluir categorias que possuem lançamentos
+- Exclua ou recategorize os lançamentos primeiro
+
+VISUALIZAÇÃO:
+- Categorias são separadas em duas colunas:
+  * Coluna esquerda: Despesas (vermelho)
+  * Coluna direita: Receitas (verde)
+
+================================================================================
+
+3.4. CONTAS FIXAS
+-----------------
+
+DESCRIÇÃO:
+Gerencie despesas e receitas que se repetem mensalmente, como aluguel,
+internet, salário, etc.
+
+3.4.1. O QUE SÃO CONTAS FIXAS?
+-------------------------------
+
+São lançamentos recorrentes que acontecem todo mês no mesmo dia com o
+mesmo valor. Exemplos:
+- Aluguel (todo dia 10)
+- Internet (todo dia 15)
+- Salário (todo dia 5)
+- Academia (todo dia 1)
+
+3.4.2. CRIAR CONTA FIXA
+------------------------
+
+OPÇÃO 1 - Pela tela de Lançamentos:
+1. Preencha o formulário de novo lançamento
+2. Marque "Conta Fixa"
+3. Informe o dia de vencimento (1-31)
+4. Clique em "Salvar Lançamento"
+
+OPÇÃO 2 - Pela tela de Contas Fixas:
+(Funcionalidade disponível através da tela de lançamentos)
+
+3.4.3. GERAR LANÇAMENTOS DO MÊS
+--------------------------------
+
+COMO FUNCIONA:
+1. Vá na aba "Lançamentos"
+2. Selecione o mês/ano desejado
+3. Clique em "Gerar" (botão amarelo em Contas Fixas)
+4. O sistema criará automaticamente todos os lançamentos das contas fixas
+
+CARACTERÍSTICAS:
+- Não duplica lançamentos já existentes
+- Cria lançamentos com status "Pendente"
+- Data será o dia de vencimento configurado
+- Mostra quantos lançamentos foram criados
+
+3.4.4. GERENCIAR CONTAS FIXAS
+------------------------------
+
+Na tela de Contas Fixas você pode:
+
+A) VISUALIZAR
+   - Lista todas as contas fixas ativas
+   - Mostra: tipo, categoria, descrição, valor, dia de vencimento
+
+B) EDITAR
+   - Clique no botão amarelo (lápis)
+   - Altere qualquer informação
+   - Pode desativar a conta (marca como inativa)
+
+C) EXCLUIR
+   - Clique no botão vermelho (lixeira)
+   - Confirme a exclusão
+   - Remove a conta fixa (não afeta lançamentos já criados)
+
+D) ATIVAR/DESATIVAR
+   - Ao editar, marque/desmarque "Ativa"
+   - Contas inativas não geram lançamentos automáticos
+
+================================================================================
+
+3.5. CONTAS PARCELADAS
+----------------------
+
+DESCRIÇÃO:
+Acompanhe e gerencie compras parceladas, prestações e outros compromissos
+divididos em múltiplos meses.
+
+3.5.1. CRIAR CONTA PARCELADA
+-----------------------------
+
+Na tela de Lançamentos:
+1. Preencha o formulário normalmente
+2. No campo "Parcelas", informe o número total (ex: 12)
+3. Clique em "Salvar Lançamento"
+
+O QUE ACONTECE:
+- Sistema cria N lançamentos automaticamente
+- Um para cada mês seguinte
+- Todos com o mesmo valor
+- Descrição inclui "1/12", "2/12", etc.
+- Todos vinculados ao mesmo contrato
+
+EXEMPLO:
+- Compra de R$ 1.200,00 em 12x
+- Cria 12 lançamentos de R$ 100,00 cada
+- Descrição: "Notebook (1/12)", "Notebook (2/12)", etc.
+
+3.5.2. VISUALIZAR PARCELADOS
+-----------------------------
+
+A tela mostra:
+- Número do contrato
+- Descrição da compra
+- Tipo (despesa/receita)
+- Categoria
+- Valor da parcela
+- Total de parcelas
+- Parcelas pagas
+- Parcelas pendentes
+- Próxima data de vencimento
+
+3.5.3. QUITAR PARCELADO
+------------------------
+
+OPÇÕES DE QUITAÇÃO:
+
+A) QUITAR PARCELA INDIVIDUAL
+   - Vá na tela de Lançamentos
+   - Localize a parcela específica
+   - Clique em "Alternar Status"
+   - Marca como paga
+
+B) QUITAR PARCELAS SELECIONADAS
+   1. Clique em "Quitar" ao lado do contrato
+   2. Selecione as parcelas desejadas (checkboxes)
+   3. Informe desconto (se houver)
+   4. Clique em "Quitar Parcelas Selecionadas"
+
+C) QUITAR TODAS AS PARCELAS
+   1. Clique em "Quitar" ao lado do contrato
+   2. Marque "Quitar Integralmente"
+   3. Informe desconto (se houver)
+   4. Clique em "Quitar Integralmente"
+
+IMPORTANTE:
+- Ao quitar com desconto, cria um único lançamento com valor ajustado
+- As parcelas originais são excluídas
+- Na observação fica registrado o desconto aplicado
+- O valor original também é registrado
+
+3.5.4. EXCLUIR CONTRATO PARCELADO
+----------------------------------
+
+COMO FAZER:
+1. Vá na tela de Lançamentos
+2. Localize uma parcela do contrato
+3. Clique em "Excluir"
+4. Confirme
+
+ATENÇÃO:
+- Exclui APENAS a parcela específica
+- Para excluir todas, exclua cada uma individualmente
+- Ou quite integralmente e depois exclua o lançamento de quitação
+
+================================================================================
+
+3.6. RELATÓRIOS
+---------------
+
+DESCRIÇÃO:
+Gere relatórios detalhados de suas movimentações financeiras em qualquer
+período.
+
+3.6.1. GERAR RELATÓRIO NA TELA
+-------------------------------
+
+COMO FAZER:
+1. Selecione a data inicial
+2. Selecione a data final
+3. Clique em "Buscar"
+
+O QUE VOCÊ VÊ:
+- Total de receitas no período
+- Total de despesas no período
+- Saldo do período
+- Lista completa de todos os lançamentos
+- Informações: data, descrição, categoria, tipo, valor, status
+
+3.6.2. EXPORTAR PARA PDF
+-------------------------
+
+COMO FAZER:
+1. Após gerar o relatório na tela
+2. Clique em "Exportar PDF"
+3. O arquivo será baixado automaticamente
+
+CONTEÚDO DO PDF:
+- Cabeçalho com período selecionado
+- Resumo financeiro (receitas, despesas, saldo)
+- Tabela detalhada com todos os lançamentos
+- Formatação profissional
+- Pronto para impressão
+
+USOS DO RELATÓRIO:
+- Prestação de contas
+- Análise de gastos
+- Declaração de imposto de renda
+- Comprovação de rendimentos
+- Controle pessoal
+
+================================================================================
+                        4. GUIA DETALHADO DE USO
+================================================================================
+
+4.1. FLUXO RECOMENDADO - INÍCIO DE MÊS
+---------------------------------------
+
+1. GERAR CONTAS FIXAS
+   - Vá em Lançamentos
+   - Clique em "Gerar" contas fixas
+   - Confirme a geração
+
+2. TRAZER SALDO ANTERIOR
+   - Clique em "Trazer" saldo anterior
+   - Sistema cria lançamento com saldo do mês passado
+
+3. TRAZER DESPESAS PENDENTES
+   - Clique em "Trazer" pendentes
+   - Sistema move pagamentos não efetuados do mês anterior
+
+4. REGISTRAR NOVOS LANÇAMENTOS
+   - Adicione receitas e despesas conforme acontecem
+   - Marque como "Pago" quando efetuar o pagamento
+
+4.2. FLUXO RECOMENDADO - DURANTE O MÊS
+---------------------------------------
+
+1. REGISTRAR LANÇAMENTOS DIÁRIOS
+   - Anote gastos e receitas do dia
+   - Seja específico nas descrições
+   - Use categorias apropriadas
+
+2. ATUALIZAR STATUS
+   - Ao pagar uma conta, marque como "Paga"
+   - Ao receber, marque receita como "Recebida"
+   - Mantenha o status sempre atualizado
+
+3. REVISAR PERIODICAMENTE
+   - Verifique se esqueceu algum lançamento
+   - Confira o saldo previsto vs realizado
+   - Ajuste categorias se necessário
+
+4.3. FLUXO RECOMENDADO - FIM DE MÊS
+------------------------------------
+
+1. CONFERIR PENDÊNCIAS
+   - Verifique lançamentos pendentes
+   - Atualize status de pagamentos efetuados
+   - Registre lançamentos esquecidos
+
+2. GERAR RELATÓRIO
+   - Crie relatório do mês completo
+   - Analise suas despesas por categoria
+   - Compare com meses anteriores
+
+3. PLANEJAR PRÓXIMO MÊS
+   - Verifique contas fixas
+   - Planeje grandes despesas
+   - Ajuste orçamento se necessário
+
+================================================================================
+                      5. DICAS E BOAS PRÁTICAS
+================================================================================
+
+5.1. ORGANIZAÇÃO
+----------------
+
+✓ USE CATEGORIAS ESPECÍFICAS
+  - Em vez de "Outros", crie categorias detalhadas
+  - Facilita análise posterior
+  - Exemplo: em vez de "Outros", use "Streaming", "Pets", "Presentes"
+
+✓ DESCRIÇÕES CLARAS
+  - "Supermercado Extra - Compra semanal"
+  - "Uber para reunião cliente X"
+  - "Salário referente mês X"
+
+✓ REGISTRE IMEDIATAMENTE
+  - Não deixe para depois
+  - Quanto mais rápido registrar, menos esquece
+  - Use o celular para registrar gastos na hora
+
+✓ REVISE SEMANALMENTE
+  - Separe 10 minutos por semana
+  - Confira lançamentos da semana
+  - Atualize status pendentes
+
+5.2. CONTROLE FINANCEIRO
+-------------------------
+
+✓ PLANEJE ANTES DE GASTAR
+  - Registre despesas previstas como "Pendente"
+  - Ajuda a visualizar compromissos futuros
+  - Evita surpresas no fim do mês
+
+✓ SEPARE PESSOAL DE TRABALHO
+  - Use categorias distintas
+  - Facilita declaração de IR
+  - Melhor controle de despesas dedutíveis
+
+✓ ACOMPANHE PARCELAMENTOS
+  - Revise regularmente a aba de Parcelados
+  - Quite antecipadamente se possível
+  - Negocie descontos para quitação
+
+✓ USE CONTAS FIXAS
+  - Configure todas as despesas recorrentes
+  - Economiza tempo de registro
+  - Nunca esquece de lançar
+
+5.3. ANÁLISE E MELHORIA
+------------------------
+
+✓ COMPARE MESES
+  - Use relatórios para comparar períodos
+  - Identifique tendências de gastos
+  - Encontre oportunidades de economia
+
+✓ DEFINA METAS
+  - Estabeleça limite para cada categoria
+  - Acompanhe se está dentro do orçamento
+  - Ajuste comportamento conforme necessário
+
+✓ IDENTIFIQUE DESPERDÍCIOS
+  - Revise categoria por categoria
+  - Questione gastos recorrentes desnecessários
+  - Cancele serviços não utilizados
+
+================================================================================
+                      6. SOLUÇÃO DE PROBLEMAS
+================================================================================
+
+6.1. NÃO CONSIGO FAZER LOGIN
+-----------------------------
+
+POSSÍVEIS CAUSAS:
+- E-mail ou senha incorretos
+- Conta não foi criada
+- Erro de digitação
+
+SOLUÇÕES:
+1. Verifique se digitou corretamente
+2. Tente fazer login novamente
+3. Se não tem conta, clique em "Registrar"
+4. Verifique se o Caps Lock está desligado
+
+6.2. LANÇAMENTO NÃO APARECE
+----------------------------
+
+POSSÍVEIS CAUSAS:
+- Está em outro mês/ano
+- Filtros estão aplicados
+- Erro ao salvar
+
+SOLUÇÕES:
+1. Verifique o mês/ano selecionado
+2. Remova todos os filtros (selecione "Todos")
+3. Limpe o campo de busca
+4. Tente criar novamente
+
+6.3. CATEGORIA ERRADA NO LANÇAMENTO
+------------------------------------
+
+SOLUÇÃO:
+1. Clique em "Editar" (lápis) no lançamento
+2. Selecione a categoria correta
+3. O tipo (receita/despesa) mudará automaticamente
+4. Clique em "Salvar Alterações"
+
+6.4. NÃO CONSIGO EXCLUIR CATEGORIA
+-----------------------------------
+
+CAUSA:
+- Categoria possui lançamentos vinculados
+
+SOLUÇÃO:
+1. Vá em Lançamentos
+2. Filtre pela categoria que quer excluir
+3. Edite cada lançamento, mudando para outra categoria
+4. Depois de remover todos os vínculos, exclua a categoria
+
+6.5. CONTAS FIXAS NÃO FORAM GERADAS
+------------------------------------
+
+POSSÍVEIS CAUSAS:
+- Contas já foram geradas anteriormente
+- Contas fixas estão inativas
+- Não há contas fixas cadastradas
+
+SOLUÇÕES:
+1. Verifique se os lançamentos já existem no mês
+2. Vá em Contas Fixas e verifique se estão "Ativas"
+3. Cadastre novas contas fixas se necessário
+
+6.6. SALDO ESTÁ INCORRETO
+--------------------------
+
+POSSÍVEIS CAUSAS:
+- Lançamentos duplicados
+- Status incorreto
+- Lançamentos em mês errado
+
+SOLUÇÕES:
+1. Revise todos os lançamentos do mês
+2. Procure duplicatas e exclua
+3. Verifique status de cada lançamento
+4. Confira se as datas estão corretas
+5. Compare com extratos bancários
+
+6.7. PARCELADO NÃO FOI CRIADO CORRETAMENTE
+-------------------------------------------
+
+SOLUÇÃO:
+1. Exclua as parcelas criadas incorretamente
+2. Verifique cada parcela pelo número do contrato
+3. Recrie o lançamento parcelado corretamente
+4. Confira se o número de parcelas está correto
+
+================================================================================
+                            7. SUPORTE
+================================================================================
+
+7.1. INFORMAÇÕES TÉCNICAS
+--------------------------
+
+SISTEMA: Finanças em Dia
+VERSÃO: 2.0
+TECNOLOGIA: Flask + Supabase (PostgreSQL)
+HOSPEDAGEM: Render.com
+
+7.2. BANCO DE DADOS
+--------------------
+
+BACKUP:
+- Seus dados são armazenados no Supabase
+- Backups automáticos diários
+- Dados criptografados
+
+SEGURANÇA:
+- Senhas criptografadas com bcrypt
+- Conexão segura HTTPS
+- Isolamento por usuário
+- Row Level Security ativado
+
+7.3. PRIVACIDADE
+----------------
+
+SEUS DADOS:
+- Nenhum dado é compartilhado com terceiros
+- Você tem controle total sobre suas informações
+- Dados ficam restritos à sua conta
+- Não há rastreamento ou analytics invasivos
+
+7.4. REQUISITOS DO SISTEMA
+---------------------------
+
+NAVEGADORES SUPORTADOS:
+- Google Chrome (recomendado)
+- Mozilla Firefox
+- Microsoft Edge
+- Safari
+
+RECOMENDAÇÕES:
+- Navegador atualizado
+- JavaScript habilitado
+- Cookies habilitados (para sessão)
+
+7.5. ATUALIZAÇÕES
+-----------------
+
+NOVIDADES NESTA VERSÃO (2.0):
+✓ Tipo automático pela categoria
+✓ Botões de editar/excluir categorias
+✓ Função de trazer saldo anterior
+✓ Função de mover pendentes do mês anterior
+✓ Melhorias de performance
+✓ Correções de bugs
+
+7.6. RECURSOS FUTUROS (PLANEJADO)
+----------------------------------
+
+Em desenvolvimento:
+- Dashboard com gráficos e análises
+- Metas de gastos por categoria
+- Notificações de vencimentos
+- Exportação para Excel
+- App mobile
+- Múltiplas contas bancárias
+- Transferências entre contas
+
+================================================================================
+                           FIM DO MANUAL
+================================================================================
+
+DESENVOLVIDO POR: Sistema Finanças em Dia
+ÚLTIMA ATUALIZAÇÃO: Novembro/2025
+
+DÚVIDAS OU SUGESTÕES:
+Consulte o repositório no GitHub: https://github.com/gui130699/Financeiro-em-dia
+
+================================================================================
