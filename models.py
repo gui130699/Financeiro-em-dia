@@ -364,22 +364,36 @@ def calcular_resumo_mes(user_id, ano, mes):
     
     receitas_total = sum(l['valor'] for l in lancamentos if l['tipo'] == 'receita')
     receitas_pagas = sum(l['valor'] for l in lancamentos if l['tipo'] == 'receita' and l['status'] == 'pago')
+    receitas_pendentes = len([l for l in lancamentos if l['tipo'] == 'receita' and l['status'] == 'pendente'])
     
     despesas_total = sum(l['valor'] for l in lancamentos if l['tipo'] == 'despesa')
     despesas_pagas = sum(l['valor'] for l in lancamentos if l['tipo'] == 'despesa' and l['status'] == 'pago')
+    despesas_pendentes = len([l for l in lancamentos if l['tipo'] == 'despesa' and l['status'] == 'pendente'])
     
     saldo = receitas_total - despesas_total
     
     return {
+        # Estrutura aninhada para dashboard
+        'receitas': {
+            'total': receitas_total,
+            'pagas': len([l for l in lancamentos if l['tipo'] == 'receita' and l['status'] == 'pago']),
+            'pendentes': receitas_pendentes
+        },
+        'despesas': {
+            'total': despesas_total,
+            'pagas': len([l for l in lancamentos if l['tipo'] == 'despesa' and l['status'] == 'pago']),
+            'pendentes': despesas_pendentes
+        },
+        'saldo': saldo,
+        # Aliases para compatibilidade com templates antigos
         'receitas_total': receitas_total,
         'receitas_pagas': receitas_pagas,
-        'total_receitas': receitas_total,  # Alias para template
+        'total_receitas': receitas_total,
         'despesas_total': despesas_total,
         'despesas_pagas': despesas_pagas,
-        'total_despesas': despesas_total,  # Alias para template
+        'total_despesas': despesas_total,
         'saldo_previsto': saldo,
-        'saldo_realizado': receitas_pagas - despesas_pagas,
-        'saldo': saldo  # Alias para template
+        'saldo_realizado': receitas_pagas - despesas_pagas
     }
 
 # Alias para compatibilidade com app.py
@@ -888,3 +902,153 @@ def listar_parcelas_contrato(numero_contrato):
         import traceback
         traceback.print_exc()
         return []
+
+# ==================== TRAZER DADOS DO MÊS ANTERIOR ====================
+
+def trazer_despesas_pendentes_mes_anterior(user_id, ano_destino, mes_destino):
+    """
+    Move todas as despesas e receitas pendentes do mês anterior para o mês especificado
+    Remove os registros do mês anterior após copiar
+    Retorna a quantidade de lançamentos movidos
+    """
+    try:
+        supabase = database.conectar()
+        
+        # Calcular mês anterior
+        if mes_destino == 1:
+            mes_origem = 12
+            ano_origem = ano_destino - 1
+        else:
+            mes_origem = mes_destino - 1
+            ano_origem = ano_destino
+        
+        # Calcular período do mês anterior
+        data_inicio = f"{ano_origem}-{mes_origem:02d}-01"
+        ultimo_dia = monthrange(ano_origem, mes_origem)[1]
+        data_fim = f"{ano_origem}-{mes_origem:02d}-{ultimo_dia}"
+        
+        # Buscar TODOS os lançamentos pendentes do mês anterior (despesas E receitas)
+        response = supabase.table('lancamentos').select('*').eq(
+            'usuario_id', user_id
+        ).eq('status', 'pendente').gte(
+            'data', data_inicio
+        ).lte('data', data_fim).execute()
+        
+        if not response.data:
+            return 0
+        
+        # Copiar cada lançamento para o mês destino e excluir o original
+        contador = 0
+        primeiro_dia_destino = f"{ano_destino}-{mes_destino:02d}-01"
+        ids_para_excluir = []
+        
+        for lanc in response.data:
+            # Criar novo lançamento no mês destino
+            novo_lanc = {
+                'usuario_id': user_id,
+                'tipo': lanc['tipo'],  # Mantém o tipo original (despesa ou receita)
+                'categoria_id': lanc['categoria_id'],
+                'descricao': f"{lanc['descricao']} (Pend. {mes_origem:02d}/{ano_origem})",
+                'valor': lanc['valor'],
+                'data': primeiro_dia_destino,
+                'status': 'pendente',
+                'observacoes': (lanc.get('observacoes', '') or '') + f" | Movido do mês {mes_origem:02d}/{ano_origem}",
+                'eh_parcelado': lanc.get('eh_parcelado', False),
+                'parcela_atual': lanc.get('parcela_atual'),
+                'total_parcelas': lanc.get('total_parcelas'),
+                'numero_contrato': lanc.get('numero_contrato'),
+                'conta_fixa_id': lanc.get('conta_fixa_id')
+            }
+            
+            supabase.table('lancamentos').insert(novo_lanc).execute()
+            ids_para_excluir.append(lanc['id'])
+            contador += 1
+        
+        # Excluir os lançamentos originais do mês anterior
+        if ids_para_excluir:
+            supabase.table('lancamentos').delete().in_('id', ids_para_excluir).execute()
+        
+        return contador
+        
+    except Exception as e:
+        print(f"Erro ao trazer despesas pendentes: {e}")
+        import traceback
+        traceback.print_exc()
+        return 0
+
+def criar_lancamento_saldo_anterior(user_id, ano_destino, mes_destino):
+    """
+    Calcula o saldo do mês anterior e cria um lançamento de receita
+    ou despesa no primeiro dia do mês destino para ajustar o saldo
+    Retorna True se criou lançamento, False caso contrário
+    """
+    try:
+        supabase = database.conectar()
+        
+        # Calcular mês anterior
+        if mes_destino == 1:
+            mes_anterior = 12
+            ano_anterior = ano_destino - 1
+        else:
+            mes_anterior = mes_destino - 1
+            ano_anterior = ano_destino
+        
+        # Obter totais do mês anterior
+        totais = obter_totais_mes(user_id, ano_anterior, mes_anterior)
+        saldo = totais['saldo']
+        
+        if saldo == 0:
+            return False
+        
+        # Buscar categoria "Saldo Anterior" ou criar se não existir
+        response = supabase.table('categorias').select('id').eq(
+            'usuario_id', user_id
+        ).eq('nome', 'Saldo Anterior').execute()
+        
+        if response.data:
+            categoria_id = response.data[0]['id']
+        else:
+            # Criar categoria
+            nova_cat = supabase.table('categorias').insert({
+                'usuario_id': user_id,
+                'nome': 'Saldo Anterior',
+                'tipo': 'receita' if saldo > 0 else 'despesa'
+            }).execute()
+            categoria_id = nova_cat.data[0]['id']
+        
+        # Criar lançamento
+        primeiro_dia = f"{ano_destino}-{mes_destino:02d}-01"
+        
+        if saldo > 0:
+            # Saldo positivo = criar receita
+            novo_lanc = {
+                'usuario_id': user_id,
+                'tipo': 'receita',
+                'categoria_id': categoria_id,
+                'descricao': f'Saldo do mês {mes_anterior:02d}/{ano_anterior}',
+                'valor': abs(saldo),
+                'data': primeiro_dia,
+                'status': 'pago',
+                'observacoes': f'Saldo positivo trazido automaticamente: R$ {saldo:.2f}'
+            }
+        else:
+            # Saldo negativo = criar despesa
+            novo_lanc = {
+                'usuario_id': user_id,
+                'tipo': 'despesa',
+                'categoria_id': categoria_id,
+                'descricao': f'Déficit do mês {mes_anterior:02d}/{ano_anterior}',
+                'valor': abs(saldo),
+                'data': primeiro_dia,
+                'status': 'pago',
+                'observacoes': f'Saldo negativo trazido automaticamente: R$ {saldo:.2f}'
+            }
+        
+        supabase.table('lancamentos').insert(novo_lanc).execute()
+        return True
+        
+    except Exception as e:
+        print(f"Erro ao criar lançamento de saldo anterior: {e}")
+        import traceback
+        traceback.print_exc()
+        return False

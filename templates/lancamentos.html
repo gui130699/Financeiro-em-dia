@@ -20,11 +20,15 @@
                     <input type="date" class="form-control" id="data" name="data" required>
                 </div>
                 
-                <div class="col-md-2">
-                    <label for="tipo" class="form-label">Tipo</label>
-                    <select class="form-select" id="tipo" name="tipo" required>
-                        <option value="despesa">Despesa</option>
-                        <option value="receita">Receita</option>
+                <div class="col-md-3">
+                    <label for="categoria_id" class="form-label">Categoria</label>
+                    <select class="form-select" id="categoria_id" name="categoria_id" required>
+                        <option value="">Selecione...</option>
+                        {% for cat in categorias %}
+                        <option value="{{ cat.id }}" data-tipo="{{ cat.tipo }}">
+                            {{ cat.nome }} ({{ cat.tipo }})
+                        </option>
+                        {% endfor %}
                     </select>
                 </div>
                 
@@ -37,16 +41,6 @@
                 <div class="col-md-3">
                     <label for="descricao" class="form-label">Descrição</label>
                     <input type="text" class="form-control" id="descricao" name="descricao" required>
-                </div>
-                
-                <div class="col-md-3">
-                    <label for="categoria_id" class="form-label">Categoria</label>
-                    <select class="form-select" id="categoria_id" name="categoria_id" required>
-                        <option value="">Selecione...</option>
-                        {% for cat in categorias %}
-                        <option value="{{ cat.id }}">{{ cat.nome }} ({{ cat.tipo }})</option>
-                        {% endfor %}
-                    </select>
                 </div>
                 
                 <div class="col-md-2">
@@ -111,13 +105,39 @@
             </div>
             
             <!-- Gerar Contas Fixas -->
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <form method="POST" action="{{ url_for('gerar_contas_fixas') }}">
                     <label class="form-label">Contas Fixas</label>
                     <input type="hidden" name="mes" value="{{ mes }}">
                     <input type="hidden" name="ano" value="{{ ano }}">
                     <button type="submit" class="btn btn-warning w-100">
-                        <i class="bi bi-arrow-repeat"></i> Gerar p/ Mês
+                        <i class="bi bi-arrow-repeat"></i> Gerar
+                    </button>
+                </form>
+            </div>
+            
+            <!-- Trazer Saldo Anterior -->
+            <div class="col-md-2">
+                <form method="POST" action="{{ url_for('trazer_saldo_anterior') }}" 
+                      onsubmit="return confirm('Deseja trazer o saldo do mês anterior para este mês?');">
+                    <label class="form-label">Saldo Anterior</label>
+                    <input type="hidden" name="mes" value="{{ mes }}">
+                    <input type="hidden" name="ano" value="{{ ano }}">
+                    <button type="submit" class="btn btn-info w-100">
+                        <i class="bi bi-wallet2"></i> Trazer
+                    </button>
+                </form>
+            </div>
+            
+            <!-- Trazer Despesas Pendentes -->
+            <div class="col-md-2">
+                <form method="POST" action="{{ url_for('trazer_despesas_pendentes') }}"
+                      onsubmit="return confirm('Deseja trazer as despesas pendentes do mês anterior?');">
+                    <label class="form-label">Pend. Anterior</label>
+                    <input type="hidden" name="mes" value="{{ mes }}">
+                    <input type="hidden" name="ano" value="{{ ano }}">
+                    <button type="submit" class="btn btn-danger w-100">
+                        <i class="bi bi-exclamation-circle"></i> Trazer
                     </button>
                 </form>
             </div>

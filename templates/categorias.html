@@ -54,8 +54,54 @@
                         <span>
                             <i class="bi bi-tag"></i> {{ cat.nome }}
                         </span>
-                        <span class="badge bg-danger rounded-pill">{{ cat.tipo }}</span>
+                        <div class="d-flex gap-2 align-items-center">
+                            <span class="badge bg-danger rounded-pill">{{ cat.tipo }}</span>
+                            <button type="button" class="btn btn-sm btn-warning" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#editarModal{{ cat.id }}">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <form method="POST" action="{{ url_for('excluir_categoria_route', categoria_id=cat.id) }}" 
+                                  style="display: inline;" 
+                                  onsubmit="return confirm('Tem certeza que deseja excluir esta categoria?');">
+                                <button type="submit" class="btn btn-sm btn-danger">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
                     </li>
+                    
+                    <!-- Modal para Editar Categoria -->
+                    <div class="modal fade" id="editarModal{{ cat.id }}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Editar Categoria</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <form method="POST" action="{{ url_for('editar_categoria', categoria_id=cat.id) }}">
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <label for="nome{{ cat.id }}" class="form-label">Nome</label>
+                                            <input type="text" class="form-control" id="nome{{ cat.id }}" 
+                                                   name="nome" value="{{ cat.nome }}" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="tipo{{ cat.id }}" class="form-label">Tipo</label>
+                                            <select class="form-select" id="tipo{{ cat.id }}" name="tipo" required>
+                                                <option value="despesa" {% if cat.tipo == 'despesa' %}selected{% endif %}>Despesa</option>
+                                                <option value="receita" {% if cat.tipo == 'receita' %}selected{% endif %}>Receita</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                        <button type="submit" class="btn btn-primary">Salvar</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
                     {% endfor %}
                 </ul>
                 {% else %}
@@ -82,8 +128,54 @@
                         <span>
                             <i class="bi bi-tag"></i> {{ cat.nome }}
                         </span>
-                        <span class="badge bg-success rounded-pill">{{ cat.tipo }}</span>
+                        <div class="d-flex gap-2 align-items-center">
+                            <span class="badge bg-success rounded-pill">{{ cat.tipo }}</span>
+                            <button type="button" class="btn btn-sm btn-warning" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#editarModal{{ cat.id }}">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <form method="POST" action="{{ url_for('excluir_categoria_route', categoria_id=cat.id) }}" 
+                                  style="display: inline;" 
+                                  onsubmit="return confirm('Tem certeza que deseja excluir esta categoria?');">
+                                <button type="submit" class="btn btn-sm btn-danger">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
                     </li>
+                    
+                    <!-- Modal para Editar Categoria -->
+                    <div class="modal fade" id="editarModal{{ cat.id }}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Editar Categoria</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <form method="POST" action="{{ url_for('editar_categoria', categoria_id=cat.id) }}">
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <label for="nome{{ cat.id }}" class="form-label">Nome</label>
+                                            <input type="text" class="form-control" id="nome{{ cat.id }}" 
+                                                   name="nome" value="{{ cat.nome }}" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="tipo{{ cat.id }}" class="form-label">Tipo</label>
+                                            <select class="form-select" id="tipo{{ cat.id }}" name="tipo" required>
+                                                <option value="despesa" {% if cat.tipo == 'despesa' %}selected{% endif %}>Despesa</option>
+                                                <option value="receita" {% if cat.tipo == 'receita' %}selected{% endif %}>Receita</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                        <button type="submit" class="btn btn-primary">Salvar</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
                     {% endfor %}
                 </ul>
                 {% else %}

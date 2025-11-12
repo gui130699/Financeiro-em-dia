@@ -1,0 +1,512 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Finanças em Dia{% endblock %}
+
+{% block content %}
+<div class="page-header mb-4">
+    <h2><i class="bi bi-speedometer2"></i> Dashboard Financeiro</h2>
+    <p class="text-muted">Análise completa das suas finanças</p>
+</div>
+
+<!-- Filtros do Dashboard -->
+<div class="card mb-4">
+    <div class="card-header bg-dark text-white">
+        <h5 class="mb-0"><i class="bi bi-funnel"></i> Filtros e Período</h5>
+    </div>
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('dashboard') }}" id="filtrosDashboard">
+            <div class="row g-3">
+                <!-- Seleção de Período -->
+                <div class="col-md-2">
+                    <label for="mes" class="form-label">Mês</label>
+                    <select class="form-select" id="mes" name="mes" onchange="document.getElementById('filtrosDashboard').submit()">
+                        <option value="1" {% if dados.mes_atual == 1 %}selected{% endif %}>Janeiro</option>
+                        <option value="2" {% if dados.mes_atual == 2 %}selected{% endif %}>Fevereiro</option>
+                        <option value="3" {% if dados.mes_atual == 3 %}selected{% endif %}>Março</option>
+                        <option value="4" {% if dados.mes_atual == 4 %}selected{% endif %}>Abril</option>
+                        <option value="5" {% if dados.mes_atual == 5 %}selected{% endif %}>Maio</option>
+                        <option value="6" {% if dados.mes_atual == 6 %}selected{% endif %}>Junho</option>
+                        <option value="7" {% if dados.mes_atual == 7 %}selected{% endif %}>Julho</option>
+                        <option value="8" {% if dados.mes_atual == 8 %}selected{% endif %}>Agosto</option>
+                        <option value="9" {% if dados.mes_atual == 9 %}selected{% endif %}>Setembro</option>
+                        <option value="10" {% if dados.mes_atual == 10 %}selected{% endif %}>Outubro</option>
+                        <option value="11" {% if dados.mes_atual == 11 %}selected{% endif %}>Novembro</option>
+                        <option value="12" {% if dados.mes_atual == 12 %}selected{% endif %}>Dezembro</option>
+                    </select>
+                </div>
+                
+                <div class="col-md-2">
+                    <label for="ano" class="form-label">Ano</label>
+                    <select class="form-select" id="ano" name="ano" onchange="document.getElementById('filtrosDashboard').submit()">
+                        {% for y in range(2020, 2031) %}
+                        <option value="{{ y }}" {% if dados.ano_atual == y %}selected{% endif %}>{{ y }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- Checkboxes de Seções -->
+                <div class="col-md-8">
+                    <label class="form-label">Seções a Exibir</label>
+                    <div class="row g-2">
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="resumo" name="resumo" value="1" 
+                                       {% if dados.filtros.resumo %}checked{% endif %}
+                                       onchange="document.getElementById('filtrosDashboard').submit()">
+                                <label class="form-check-label" for="resumo">
+                                    <i class="bi bi-card-list"></i> Resumo do Mês
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="variacao" name="variacao" value="1"
+                                       {% if dados.filtros.variacao %}checked{% endif %}
+                                       onchange="document.getElementById('filtrosDashboard').submit()">
+                                <label class="form-check-label" for="variacao">
+                                    <i class="bi bi-graph-up-arrow"></i> Variação de Gastos
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="categorias" name="categorias" value="1"
+                                       {% if dados.filtros.categorias %}checked{% endif %}
+                                       onchange="document.getElementById('filtrosDashboard').submit()">
+                                <label class="form-check-label" for="categorias">
+                                    <i class="bi bi-pie-chart"></i> Top Categorias
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="distribuicao" name="distribuicao" value="1"
+                                       {% if dados.filtros.distribuicao %}checked{% endif %}
+                                       onchange="document.getElementById('filtrosDashboard').submit()">
+                                <label class="form-check-label" for="distribuicao">
+                                    <i class="bi bi-pie-chart-fill"></i> Distribuição
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="evolucao" name="evolucao" value="1"
+                                       {% if dados.filtros.evolucao %}checked{% endif %}
+                                       onchange="document.getElementById('filtrosDashboard').submit()">
+                                <label class="form-check-label" for="evolucao">
+                                    <i class="bi bi-graph-up"></i> Evolução Mensal
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="selecionarTodos()">
+                                <i class="bi bi-check-all"></i> Todos
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="limparTodos()">
+                                <i class="bi bi-x"></i> Limpar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Cards de Resumo -->
+{% if dados.filtros.resumo and dados.totais_mes %}
+<div class="row mb-4">
+    <!-- Total Receitas -->
+    <div class="col-md-3">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <h6 class="card-title"><i class="bi bi-arrow-up-circle"></i> Receitas do Mês</h6>
+                <h3 class="mb-0">R$ {{ "%.2f"|format(dados.totais_mes.receitas.total) }}</h3>
+                <small>{{ dados.totais_mes.receitas.pagas }} pag. | {{ dados.totais_mes.receitas.pendentes }} pend.</small>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Total Despesas -->
+    <div class="col-md-3">
+        <div class="card text-white bg-danger">
+            <div class="card-body">
+                <h6 class="card-title"><i class="bi bi-arrow-down-circle"></i> Despesas do Mês</h6>
+                <h3 class="mb-0">R$ {{ "%.2f"|format(dados.totais_mes.despesas.total) }}</h3>
+                <small>{{ dados.totais_mes.despesas.pagas }} pag. | {{ dados.totais_mes.despesas.pendentes }} pend.</small>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Saldo -->
+    <div class="col-md-3">
+        <div class="card text-white {% if dados.totais_mes.saldo >= 0 %}bg-primary{% else %}bg-warning{% endif %}">
+            <div class="card-body">
+                <h6 class="card-title"><i class="bi bi-wallet2"></i> Saldo do Mês</h6>
+                <h3 class="mb-0">R$ {{ "%.2f"|format(dados.totais_mes.saldo) }}</h3>
+                <small>{% if dados.totais_mes.saldo >= 0 %}Positivo{% else %}Negativo{% endif %}</small>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Média de Gastos -->
+    <div class="col-md-3">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <h6 class="card-title"><i class="bi bi-calculator"></i> Média Gastos (3m)</h6>
+                <h3 class="mb-0">R$ {{ "%.2f"|format(dados.media_gastos.media) }}</h3>
+                <small>Últimos 3 meses</small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Variação de Gastos -->
+{% if dados.filtros.variacao and dados.variacao_gastos %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header {% if dados.variacao_gastos.aumentou %}bg-danger{% else %}bg-success{% endif %} text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-graph-{% if dados.variacao_gastos.aumentou %}up{% else %}down{% endif %}-arrow"></i>
+                    Variação de Gastos
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <h6 class="text-muted">Mês Anterior</h6>
+                        <h4>R$ {{ "%.2f"|format(dados.variacao_gastos.mes_anterior.total) }}</h4>
+                        <small>{{ dados.variacao_gastos.mes_anterior.mes }}/{{ dados.variacao_gastos.mes_anterior.ano }}</small>
+                    </div>
+                    <div class="col-md-4">
+                        <h6 class="text-muted">Mês Atual</h6>
+                        <h4>R$ {{ "%.2f"|format(dados.variacao_gastos.mes_atual.total) }}</h4>
+                        <small>{{ dados.variacao_gastos.mes_atual.mes }}/{{ dados.variacao_gastos.mes_atual.ano }}</small>
+                    </div>
+                    <div class="col-md-4">
+                        <h6 class="text-muted">Variação</h6>
+                        <h4 class="{% if dados.variacao_gastos.aumentou %}text-danger{% else %}text-success{% endif %}">
+                            {% if dados.variacao_gastos.aumentou %}+{% endif %}{{ "%.1f"|format(dados.variacao_gastos.variacao_percentual) }}%
+                        </h4>
+                        <small>
+                            {% if dados.variacao_gastos.aumentou %}
+                                <i class="bi bi-arrow-up"></i> Aumento de R$ {{ "%.2f"|format(dados.variacao_gastos.variacao_valor) }}
+                            {% else %}
+                                <i class="bi bi-arrow-down"></i> Redução de R$ {{ "%.2f"|format(dados.variacao_gastos.variacao_valor|abs) }}
+                            {% endif %}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Gráficos e Análises -->
+<div class="row mb-4">
+    <!-- Top 5 Categorias Mais Gastas -->
+    {% if dados.filtros.categorias %}
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-pie-chart"></i> Top 5 Categorias Mais Gastas</h5>
+            </div>
+            <div class="card-body">
+                {% if dados.top_categorias %}
+                <div class="mb-3">
+                    <canvas id="categoriasPieChart" height="250"></canvas>
+                </div>
+                <ul class="list-group">
+                    {% for cat in dados.top_categorias %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="bi bi-tag"></i> {{ cat.nome }}
+                            <small class="text-muted">({{ cat.quantidade }} lançamentos)</small>
+                        </div>
+                        <span class="badge bg-danger rounded-pill">R$ {{ "%.2f"|format(cat.total) }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div class="alert alert-info mb-0">
+                    <i class="bi bi-info-circle"></i> Nenhum gasto registrado neste mês.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Distribuição Receitas x Despesas -->
+    {% if dados.filtros.distribuicao %}
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-pie-chart-fill"></i> Distribuição do Mês</h5>
+            </div>
+            <div class="card-body">
+                {% if dados.distribuicao_tipo %}
+                <div class="mb-3">
+                    <canvas id="distribuicaoChart" height="250"></canvas>
+                </div>
+                <div class="row text-center mt-3">
+                    <div class="col-6">
+                        <h6 class="text-success">Receitas</h6>
+                        <h4>{{ "%.1f"|format(dados.distribuicao_tipo.receitas.percentual) }}%</h4>
+                        <small>R$ {{ "%.2f"|format(dados.distribuicao_tipo.receitas.valor) }}</small>
+                    </div>
+                    <div class="col-6">
+                        <h6 class="text-danger">Despesas</h6>
+                        <h4>{{ "%.1f"|format(dados.distribuicao_tipo.despesas.percentual) }}%</h4>
+                        <small>R$ {{ "%.2f"|format(dados.distribuicao_tipo.despesas.valor) }}</small>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Evolução Mensal -->
+{% if dados.filtros.evolucao %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0"><i class="bi bi-graph-up"></i> Evolução dos Últimos 6 Meses</h5>
+            </div>
+            <div class="card-body">
+                {% if dados.comparacao_mensal %}
+                <canvas id="evolucaoChart" height="100"></canvas>
+                
+                <div class="table-responsive mt-4">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Mês</th>
+                                <th class="text-end">Receitas</th>
+                                <th class="text-end">Despesas</th>
+                                <th class="text-end">Saldo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for mes in dados.comparacao_mensal %}
+                            <tr>
+                                <td><strong>{{ mes.mes_nome }}</strong></td>
+                                <td class="text-end text-success">R$ {{ "%.2f"|format(mes.receitas) }}</td>
+                                <td class="text-end text-danger">R$ {{ "%.2f"|format(mes.despesas) }}</td>
+                                <td class="text-end {% if mes.saldo >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                    R$ {{ "%.2f"|format(mes.saldo) }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info mb-0">
+                    <i class="bi bi-info-circle"></i> Dados insuficientes para análise mensal.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Configurações de cores
+    const colors = {
+        primary: '#0d6efd',
+        success: '#198754',
+        danger: '#dc3545',
+        warning: '#ffc107',
+        info: '#0dcaf0',
+        purple: '#6f42c1',
+        orange: '#fd7e14',
+        pink: '#d63384'
+    };
+    
+    const categoriasColors = [colors.danger, colors.warning, colors.info, colors.purple, colors.orange];
+    
+    // Gráfico de Categorias Mais Gastas
+    {% if dados.top_categorias %}
+    const ctxCategorias = document.getElementById('categoriasPieChart');
+    if (ctxCategorias) {
+        new Chart(ctxCategorias, {
+            type: 'doughnut',
+            data: {
+                labels: [
+                    {% for cat in dados.top_categorias %}'{{ cat.nome }}'{% if not loop.last %},{% endif %}{% endfor %}
+                ],
+                datasets: [{
+                    data: [
+                        {% for cat in dados.top_categorias %}{{ cat.total }}{% if not loop.last %},{% endif %}{% endfor %}
+                    ],
+                    backgroundColor: categoriasColors,
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': R$ ' + context.parsed.toFixed(2);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+    {% endif %}
+    
+    // Gráfico de Distribuição Receitas x Despesas
+    {% if dados.distribuicao_tipo %}
+    const ctxDistribuicao = document.getElementById('distribuicaoChart');
+    if (ctxDistribuicao) {
+        new Chart(ctxDistribuicao, {
+            type: 'pie',
+            data: {
+                labels: ['Receitas', 'Despesas'],
+                datasets: [{
+                    data: [
+                        {{ dados.distribuicao_tipo.receitas.valor }},
+                        {{ dados.distribuicao_tipo.despesas.valor }}
+                    ],
+                    backgroundColor: [colors.success, colors.danger],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const percentage = context.parsed > 0 ? 
+                                    ((context.parsed / {{ dados.distribuicao_tipo.total }}) * 100).toFixed(1) : 0;
+                                return context.label + ': R$ ' + context.parsed.toFixed(2) + ' (' + percentage + '%)';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+    {% endif %}
+    
+    // Gráfico de Evolução Mensal
+    {% if dados.comparacao_mensal %}
+    const ctxEvolucao = document.getElementById('evolucaoChart');
+    if (ctxEvolucao) {
+        new Chart(ctxEvolucao, {
+            type: 'line',
+            data: {
+                labels: [
+                    {% for mes in dados.comparacao_mensal %}'{{ mes.mes_nome }}'{% if not loop.last %},{% endif %}{% endfor %}
+                ],
+                datasets: [{
+                    label: 'Receitas',
+                    data: [
+                        {% for mes in dados.comparacao_mensal %}{{ mes.receitas }}{% if not loop.last %},{% endif %}{% endfor %}
+                    ],
+                    borderColor: colors.success,
+                    backgroundColor: colors.success + '33',
+                    tension: 0.4,
+                    fill: true
+                }, {
+                    label: 'Despesas',
+                    data: [
+                        {% for mes in dados.comparacao_mensal %}{{ mes.despesas }}{% if not loop.last %},{% endif %}{% endfor %}
+                    ],
+                    borderColor: colors.danger,
+                    backgroundColor: colors.danger + '33',
+                    tension: 0.4,
+                    fill: true
+                }, {
+                    label: 'Saldo',
+                    data: [
+                        {% for mes in dados.comparacao_mensal %}{{ mes.saldo }}{% if not loop.last %},{% endif %}{% endfor %}
+                    ],
+                    borderColor: colors.primary,
+                    backgroundColor: colors.primary + '33',
+                    tension: 0.4,
+                    fill: false,
+                    borderDash: [5, 5]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': R$ ' + context.parsed.y.toFixed(2);
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return 'R$ ' + value.toFixed(0);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+    {% endif %}
+});
+
+// Funções para os botões de filtro
+function selecionarTodos() {
+    document.getElementById('resumo').checked = true;
+    document.getElementById('variacao').checked = true;
+    document.getElementById('categorias').checked = true;
+    document.getElementById('distribuicao').checked = true;
+    document.getElementById('evolucao').checked = true;
+    document.getElementById('filtrosDashboard').submit();
+}
+
+function limparTodos() {
+    document.getElementById('resumo').checked = false;
+    document.getElementById('variacao').checked = false;
+    document.getElementById('categorias').checked = false;
+    document.getElementById('distribuicao').checked = false;
+    document.getElementById('evolucao').checked = false;
+    document.getElementById('filtrosDashboard').submit();
+}
+</script>
+{% endblock %}

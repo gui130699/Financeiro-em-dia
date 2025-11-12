@@ -18,14 +18,14 @@
                 </div>
                 
                 <div class="col-md-3">
-                    <label for="tipo" class="form-label">Tipo</label>
-                    <select class="form-select" id="tipo" name="tipo" required>
-                        <option value="despesa" {% if lancamento.tipo == 'despesa' %}selected{% endif %}>
-                            Despesa
+                    <label for="categoria_id" class="form-label">Categoria</label>
+                    <select class="form-select" id="categoria_id" name="categoria_id" required>
+                        {% for cat in categorias %}
+                        <option value="{{ cat.id }}" data-tipo="{{ cat.tipo }}"
+                                {% if cat.id == lancamento.categoria_id %}selected{% endif %}>
+                            {{ cat.nome }} ({{ cat.tipo }})
                         </option>
-                        <option value="receita" {% if lancamento.tipo == 'receita' %}selected{% endif %}>
-                            Receita
-                        </option>
+                        {% endfor %}
                     </select>
                 </div>
                 
@@ -36,15 +36,9 @@
                 </div>
                 
                 <div class="col-md-3">
-                    <label for="categoria_id" class="form-label">Categoria</label>
-                    <select class="form-select" id="categoria_id" name="categoria_id" required>
-                        {% for cat in categorias %}
-                        <option value="{{ cat.id }}" 
-                                {% if cat.id == lancamento.categoria_id %}selected{% endif %}>
-                            {{ cat.nome }} ({{ cat.tipo }})
-                        </option>
-                        {% endfor %}
-                    </select>
+                    <label class="form-label">Tipo (automático)</label>
+                    <input type="text" class="form-control" id="tipoDisplay" 
+                           value="{{ lancamento.tipo|capitalize }}" disabled>
                 </div>
                 
                 <div class="col-md-6">
@@ -71,4 +65,15 @@
         </form>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Atualizar campo de tipo quando mudar a categoria
+    document.getElementById('categoria_id').addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const tipo = selectedOption.getAttribute('data-tipo');
+        document.getElementById('tipoDisplay').value = tipo ? tipo.charAt(0).toUpperCase() + tipo.slice(1) : '';
+    });
+</script>
 {% endblock %}

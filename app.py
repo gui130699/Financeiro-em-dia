@@ -163,7 +163,6 @@ def lancamentos():
     if request.method == 'POST':
         # Processar novo lançamento
         data = request.form.get('data')
-        tipo = request.form.get('tipo')
         valor = float(request.form.get('valor'))
         descricao = request.form.get('descricao')
         categoria_id = int(request.form.get('categoria_id'))
@@ -171,6 +170,14 @@ def lancamentos():
         conta_fixa = request.form.get('conta_fixa') == 'on'
         dia_vencimento = request.form.get('dia_vencimento', type=int)
         observacao = request.form.get('observacao', '')
+        
+        # Buscar o tipo da categoria selecionada
+        categoria = models.obter_categoria(categoria_id)
+        if not categoria:
+            flash('Categoria não encontrada!', 'danger')
+            return redirect(url_for('lancamentos'))
+        
+        tipo = categoria['tipo']  # Pega o tipo da categoria (receita ou despesa)
         
         if conta_fixa and dia_vencimento:
             # Criar conta fixa
@@ -238,6 +245,38 @@ def gerar_contas_fixas():
     
     return redirect(url_for('lancamentos', mes=mes, ano=ano))
 
+@app.route('/lancamentos/trazer-saldo-anterior', methods=['POST'])
+@login_required
+def trazer_saldo_anterior():
+    user_id = session['user_id']
+    mes = int(request.form.get('mes'))
+    ano = int(request.form.get('ano'))
+    
+    sucesso = models.criar_lancamento_saldo_anterior(user_id, ano, mes)
+    
+    if sucesso:
+        flash('Saldo do mês anterior trazido com sucesso!', 'success')
+    else:
+        flash('Não há saldo no mês anterior para trazer.', 'info')
+    
+    return redirect(url_for('lancamentos', mes=mes, ano=ano))
+
+@app.route('/lancamentos/trazer-despesas-pendentes', methods=['POST'])
+@login_required
+def trazer_despesas_pendentes():
+    user_id = session['user_id']
+    mes = int(request.form.get('mes'))
+    ano = int(request.form.get('ano'))
+    
+    qtd = models.trazer_despesas_pendentes_mes_anterior(user_id, ano, mes)
+    
+    if qtd > 0:
+        flash(f'{qtd} lançamento(s) pendente(s) movido(s) do mês anterior! Os registros originais foram removidos.', 'success')
+    else:
+        flash('Não há lançamentos pendentes no mês anterior.', 'info')
+    
+    return redirect(url_for('lancamentos', mes=mes, ano=ano))
+
 @app.route('/lancamentos/<int:lanc_id>/alternar-status', methods=['POST'])
 @login_required
 def alternar_status(lanc_id):
@@ -259,12 +298,19 @@ def editar_lancamento(lanc_id):
     
     if request.method == 'POST':
         data = request.form.get('data')
-        tipo = request.form.get('tipo')
         valor = float(request.form.get('valor'))
         descricao = request.form.get('descricao')
         categoria_id = int(request.form.get('categoria_id'))
         status = request.form.get('status', 'pendente')
         observacao = request.form.get('observacao', '')
+        
+        # Buscar o tipo da categoria selecionada
+        categoria = models.obter_categoria(categoria_id)
+        if not categoria:
+            flash('Categoria não encontrada!', 'danger')
+            return redirect(url_for('lancamentos'))
+        
+        tipo = categoria['tipo']  # Pega o tipo da categoria (receita ou despesa)
         
         # atualizar_lancamento(lancamento_id, tipo, categoria_id, descricao, valor, data, status, observacoes)
         models.atualizar_lancamento(lanc_id, tipo, categoria_id, descricao, valor, 
@@ -297,6 +343,26 @@ def categorias():
     
     categorias_list = models.listar_categorias(user_id)
     return render_template('categorias.html', categorias=categorias_list)
+
+@app.route('/categorias/<int:categoria_id>/editar', methods=['POST'])
+@login_required
+def editar_categoria(categoria_id):
+    nome = request.form.get('nome')
+    tipo = request.form.get('tipo')
+    
+    models.atualizar_categoria(categoria_id, nome, tipo)
+    flash('Categoria atualizada com sucesso!', 'success')
+    return redirect(url_for('categorias'))
+
+@app.route('/categorias/<int:categoria_id>/excluir', methods=['POST'])
+@login_required
+def excluir_categoria_route(categoria_id):
+    try:
+        models.excluir_categoria(categoria_id)
+        flash('Categoria excluída com sucesso!', 'success')
+    except Exception as e:
+        flash('Erro ao excluir categoria. Ela pode estar sendo usada por lançamentos.', 'danger')
+    return redirect(url_for('categorias'))
 
 # ==================== CONTAS FIXAS ====================
 
