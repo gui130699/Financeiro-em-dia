@@ -364,38 +364,53 @@ def calcular_resumo_mes(user_id, ano, mes):
     """Calcula resumo financeiro do mês"""
     lancamentos = listar_lancamentos_mes(user_id, ano, mes)
     
-    receitas_total = sum(l['valor'] for l in lancamentos if l['tipo'] == 'receita')
+    # Calcular valores pagos/recebidos
     receitas_pagas = sum(l['valor'] for l in lancamentos if l['tipo'] == 'receita' and l['status'] == 'pago')
-    receitas_pendentes = len([l for l in lancamentos if l['tipo'] == 'receita' and l['status'] == 'pendente'])
-    
-    despesas_total = sum(l['valor'] for l in lancamentos if l['tipo'] == 'despesa')
     despesas_pagas = sum(l['valor'] for l in lancamentos if l['tipo'] == 'despesa' and l['status'] == 'pago')
-    despesas_pendentes = len([l for l in lancamentos if l['tipo'] == 'despesa' and l['status'] == 'pendente'])
     
-    saldo = receitas_total - despesas_total
+    # Calcular valores pendentes/a receber
+    receitas_pendentes_valor = sum(l['valor'] for l in lancamentos if l['tipo'] == 'receita' and l['status'] == 'pendente')
+    despesas_pendentes_valor = sum(l['valor'] for l in lancamentos if l['tipo'] == 'despesa' and l['status'] == 'pendente')
+    
+    # Contar quantidade de lançamentos pendentes
+    receitas_pendentes_qtd = len([l for l in lancamentos if l['tipo'] == 'receita' and l['status'] == 'pendente'])
+    despesas_pendentes_qtd = len([l for l in lancamentos if l['tipo'] == 'despesa' and l['status'] == 'pendente'])
+    
+    # Totais (pagas + pendentes)
+    receitas_total = receitas_pagas + receitas_pendentes_valor
+    despesas_total = despesas_pagas + despesas_pendentes_valor
+    
+    # Saldo realizado (apenas pagos) e previsto (incluindo pendentes)
+    saldo_realizado = receitas_pagas - despesas_pagas
+    saldo_previsto = receitas_total - despesas_total
     
     return {
         # Estrutura aninhada para dashboard
         'receitas': {
             'total': receitas_total,
             'pagas': len([l for l in lancamentos if l['tipo'] == 'receita' and l['status'] == 'pago']),
-            'pendentes': receitas_pendentes
+            'pendentes': receitas_pendentes_qtd
         },
         'despesas': {
             'total': despesas_total,
             'pagas': len([l for l in lancamentos if l['tipo'] == 'despesa' and l['status'] == 'pago']),
-            'pendentes': despesas_pendentes
+            'pendentes': despesas_pendentes_qtd
         },
-        'saldo': saldo,
+        'saldo': saldo_previsto,
+        # Valores para home (apenas pagos)
+        'receitas_pagas': receitas_pagas,
+        'despesas_pagas': despesas_pagas,
+        'receitas_pendentes_valor': receitas_pendentes_valor,
+        'despesas_pendentes_valor': despesas_pendentes_valor,
+        'receitas_pendentes_qtd': receitas_pendentes_qtd,
+        'despesas_pendentes_qtd': despesas_pendentes_qtd,
         # Aliases para compatibilidade com templates antigos
         'receitas_total': receitas_total,
-        'receitas_pagas': receitas_pagas,
-        'total_receitas': receitas_total,
+        'total_receitas': receitas_pagas,  # Mudado para mostrar apenas pagas
         'despesas_total': despesas_total,
-        'despesas_pagas': despesas_pagas,
-        'total_despesas': despesas_total,
-        'saldo_previsto': saldo,
-        'saldo_realizado': receitas_pagas - despesas_pagas
+        'total_despesas': despesas_pagas,  # Mudado para mostrar apenas pagas
+        'saldo_previsto': saldo_previsto,
+        'saldo_realizado': saldo_realizado
     }
 
 # Alias para compatibilidade com app.py

@@ -44,33 +44,78 @@
 
 <!-- Cards de Totais -->
 <div class="row mb-4">
-    <div class="col-md-4">
+    <!-- Receitas Recebidas -->
+    <div class="col-md-3">
         <div class="card text-white bg-success">
             <div class="card-header">
                 <i class="bi bi-arrow-up-circle"></i> Receitas Recebidas
             </div>
             <div class="card-body">
-                <h3 class="card-title">R$ {{ "%.2f"|format(totais.total_receitas) }}</h3>
+                <h3 class="card-title">R$ {{ "%.2f"|format(totais.receitas_pagas) }}</h3>
             </div>
         </div>
     </div>
-    <div class="col-md-4">
+    
+    <!-- Receitas a Receber -->
+    <div class="col-md-3">
+        <div class="card text-white bg-info">
+            <div class="card-header">
+                <i class="bi bi-clock-history"></i> Receitas a Receber
+            </div>
+            <div class="card-body">
+                <h3 class="card-title">R$ {{ "%.2f"|format(totais.receitas_pendentes_valor) }}</h3>
+                <small>{{ totais.receitas_pendentes_qtd }} pendente(s)</small>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Despesas Pagas -->
+    <div class="col-md-3">
         <div class="card text-white bg-danger">
             <div class="card-header">
                 <i class="bi bi-arrow-down-circle"></i> Despesas Pagas
             </div>
             <div class="card-body">
-                <h3 class="card-title">R$ {{ "%.2f"|format(totais.total_despesas) }}</h3>
+                <h3 class="card-title">R$ {{ "%.2f"|format(totais.despesas_pagas) }}</h3>
             </div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card text-white {% if totais.saldo >= 0 %}bg-primary{% else %}bg-warning{% endif %}">
+    
+    <!-- Despesas Pendentes -->
+    <div class="col-md-3">
+        <div class="card text-white bg-warning">
             <div class="card-header">
-                <i class="bi bi-wallet2"></i> Saldo do Mês
+                <i class="bi bi-exclamation-triangle"></i> Despesas Pendentes
             </div>
             <div class="card-body">
-                <h3 class="card-title">R$ {{ "%.2f"|format(totais.saldo) }}</h3>
+                <h3 class="card-title">R$ {{ "%.2f"|format(totais.despesas_pendentes_valor) }}</h3>
+                <small>{{ totais.despesas_pendentes_qtd }} pendente(s)</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cards de Saldo -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card text-white {% if totais.saldo_realizado >= 0 %}bg-primary{% else %}bg-dark{% endif %}">
+            <div class="card-header">
+                <i class="bi bi-wallet2"></i> Saldo Realizado (Pago)
+            </div>
+            <div class="card-body">
+                <h3 class="card-title">R$ {{ "%.2f"|format(totais.saldo_realizado) }}</h3>
+                <small>Receitas pagas - Despesas pagas</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card text-white {% if totais.saldo_previsto >= 0 %}bg-success{% else %}bg-secondary{% endif %}">
+            <div class="card-header">
+                <i class="bi bi-calendar-check"></i> Saldo Previsto (Total)
+            </div>
+            <div class="card-body">
+                <h3 class="card-title">R$ {{ "%.2f"|format(totais.saldo_previsto) }}</h3>
+                <small>Incluindo receitas/despesas pendentes</small>
             </div>
         </div>
     </div>
