@@ -1,7 +1,7 @@
 // ============================================
 // FINANCEIRO EM DIA - PWA
 // Todas as funcionalidades do Flask convertidas para JavaScript
-// Versão: 2025-11-14 23:15 - Parcelados quitados somem da tela
+// Versão: 2025-11-15 00:00 - Modal seleção parcelas e checkbox parcelado
 // ============================================
 
 // Configuração do Supabase
@@ -74,6 +74,7 @@ async function showPage(page) {
             await loadCategorias();
             await loadLancamentos();
             document.getElementById('lanc-data').valueAsDate = new Date();
+            inicializarFormularioLancamento();
             break;
         case 'categorias':
             app.innerHTML = getCategoriasHTML();
@@ -553,13 +554,38 @@ function getLancamentosHTML() {
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Valor</label>
-                                <input type="number" step="0.01" class="form-control" id="lanc-valor" required>
+                            <div class="col-md-12 mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="lanc-eh-parcelado">
+                                    <label class="form-check-label" for="lanc-eh-parcelado">
+                                        <strong>Lançamento Parcelado</strong>
+                                    </label>
+                                </div>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Parcelas</label>
-                                <input type="number" class="form-control" id="lanc-parcelas" min="1" value="1">
+                        </div>
+                        <div id="campos-parcelamento" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Número de Parcelas</label>
+                                    <input type="number" class="form-control" id="lanc-parcelas" min="2" value="2">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Tipo de Valor</label>
+                                    <select class="form-select" id="lanc-tipo-valor">
+                                        <option value="total">Valor Total (dividir)</option>
+                                        <option value="parcela">Valor da Parcela</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label" id="label-valor">Valor Total</label>
+                                    <input type="number" step="0.01" class="form-control" id="lanc-valor" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="campo-valor-simples" class="row">
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">Valor</label>
+                                <input type="number" step="0.01" class="form-control" id="lanc-valor-simples" required>
                             </div>
                         </div>
                         <button type="submit" class="btn btn-success">
@@ -643,14 +669,57 @@ async function loadCategorias() {
     }
 }
 
+function inicializarFormularioLancamento() {
+    const checkParcelado = document.getElementById('lanc-eh-parcelado');
+    const camposParcelamento = document.getElementById('campos-parcelamento');
+    const campoValorSimples = document.getElementById('campo-valor-simples');
+    const tipoValor = document.getElementById('lanc-tipo-valor');
+    const labelValor = document.getElementById('label-valor');
+    
+    checkParcelado.addEventListener('change', function() {
+        if (this.checked) {
+            camposParcelamento.style.display = 'block';
+            campoValorSimples.style.display = 'none';
+        } else {
+            camposParcelamento.style.display = 'none';
+            campoValorSimples.style.display = 'block';
+        }
+    });
+    
+    tipoValor.addEventListener('change', function() {
+        if (this.value === 'total') {
+            labelValor.textContent = 'Valor Total (será dividido)';
+        } else {
+            labelValor.textContent = 'Valor da Parcela';
+        }
+    });
+}
+
 async function handleAddLancamento(event) {
     event.preventDefault();
     
     const data = document.getElementById('lanc-data').value;
     const descricao = document.getElementById('lanc-descricao').value;
     const categoria_id = parseInt(document.getElementById('lanc-categoria').value);
-    const valor = parseFloat(document.getElementById('lanc-valor').value);
-    const parcelas = parseInt(document.getElementById('lanc-parcelas').value) || 1;
+    const ehParcelado = document.getElementById('lanc-eh-parcelado').checked;
+    
+    let valor, parcelas = 1;
+    
+    if (ehParcelado) {
+        parcelas = parseInt(document.getElementById('lanc-parcelas').value);
+        const tipoValor = document.getElementById('lanc-tipo-valor').value;
+        const valorInput = parseFloat(document.getElementById('lanc-valor').value);
+        
+        if (tipoValor === 'total') {
+            // Valor total - dividir pelas parcelas
+            valor = valorInput / parcelas;
+        } else {
+            // Valor já é da parcela
+            valor = valorInput;
+        }
+    } else {
+        valor = parseFloat(document.getElementById('lanc-valor-simples').value);
+    }
     
     try {
         // Buscar o tipo da categoria selecionada
@@ -685,10 +754,15 @@ async function handleAddLancamento(event) {
             if (error) throw error;
         }
         
-        showAlert('Lançamento adicionado com sucesso!', 'success');
+        const msg = ehParcelado 
+            ? `${parcelas} parcelas de R$ ${valor.toFixed(2)} adicionadas!`
+            : 'Lançamento adicionado com sucesso!';
+        showAlert(msg, 'success');
         event.target.reset();
         document.getElementById('lanc-data').valueAsDate = new Date();
-        document.getElementById('lanc-parcelas').value = 1;
+        document.getElementById('lanc-eh-parcelado').checked = false;
+        document.getElementById('campos-parcelamento').style.display = 'none';
+        document.getElementById('campo-valor-simples').style.display = 'block';
         await loadLancamentos();
     } catch (err) {
         showAlert('Erro ao adicionar lançamento: ' + err.message, 'danger');
@@ -1742,57 +1816,193 @@ async function quitarParcial(parcelasIds) {
         return;
     }
     
-    const quantas = parseInt(prompt(`Quantas parcelas deseja quitar? (máx: ${parcelasIds.length})`, '1'));
-    
-    if (!quantas || quantas < 1) {
-        console.log('Quitação parcial cancelada');
-        return;
-    }
-    
     try {
-        console.log('Buscando', quantas, 'parcelas pendentes...');
-        const { data, error } = await supabase
+        // Buscar todas as parcelas pendentes
+        const { data: todasParcelas, error } = await supabase
             .from('lancamentos')
-            .select('id, descricao, categoria_id, tipo, valor, parcela_atual, total_parcelas')
+            .select('id, descricao, categoria_id, tipo, valor, parcela_atual, total_parcelas, data')
             .in('id', parcelasIds)
             .eq('status', 'pendente')
-            .order('parcela_atual')
-            .limit(quantas);
+            .order('parcela_atual');
         
-        if (error) {
-            console.error('Erro ao buscar parcelas:', error);
-            throw error;
-        }
+        if (error) throw error;
         
-        console.log('Parcelas encontradas:', data?.length || 0);
-        
-        if (data.length === 0) {
+        if (todasParcelas.length === 0) {
             showAlert('Nenhuma parcela pendente!', 'info');
             return;
         }
         
-        const valorTotal = data.reduce((sum, p) => sum + parseFloat(p.valor), 0);
-        const desconto = parseFloat(prompt(`Valor total: R$ ${valorTotal.toFixed(2)}\n\nInforme o desconto (em R$):`, '0') || 0);
+        // Mostrar modal de seleção de parcelas
+        mostrarModalSelecaoParcelas(todasParcelas);
         
-        if (desconto < 0 || desconto > valorTotal) {
+    } catch (err) {
+        console.error('Erro ao buscar parcelas:', err);
+        showAlert('Erro ao buscar parcelas: ' + err.message, 'danger');
+    }
+}
+
+function mostrarModalSelecaoParcelas(parcelas) {
+    const modalHTML = `
+        <div class="modal fade show" style="display: block; background: rgba(0,0,0,0.5);" id="modalSelecaoParcelas">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-warning text-dark">
+                        <h5 class="modal-title">
+                            <i class="bi bi-check2-square"></i> Selecione as Parcelas para Quitar
+                        </h5>
+                        <button type="button" class="btn-close" onclick="fecharModalSelecaoParcelas()"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="text-muted">Marque as parcelas que deseja quitar:</p>
+                        <div class="list-group">
+                            ${parcelas.map(p => `
+                                <label class="list-group-item">
+                                    <input class="form-check-input me-2" type="checkbox" value="${p.id}" data-valor="${p.valor}" data-parcela="${p.parcela_atual}/${p.total_parcelas}">
+                                    Parcela ${p.parcela_atual}/${p.total_parcelas} - ${formatDate(p.data)} - R$ ${parseFloat(p.valor).toFixed(2)}
+                                </label>
+                            `).join('')}
+                        </div>
+                        <hr>
+                        <p><strong>Total selecionado:</strong> <span id="totalSelecionado">R$ 0,00</span></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="fecharModalSelecaoParcelas()">Cancelar</button>
+                        <button type="button" class="btn btn-success" onclick="confirmarSelecaoParcelas()">Confirmar Seleção</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    const modalDiv = document.createElement('div');
+    modalDiv.innerHTML = modalHTML;
+    document.body.appendChild(modalDiv.firstElementChild);
+    
+    // Atualizar total ao selecionar
+    document.querySelectorAll('#modalSelecaoParcelas input[type="checkbox"]').forEach(cb => {
+        cb.addEventListener('change', atualizarTotalSelecionado);
+    });
+}
+
+function atualizarTotalSelecionado() {
+    const checkboxes = document.querySelectorAll('#modalSelecaoParcelas input[type="checkbox"]:checked');
+    const total = Array.from(checkboxes).reduce((sum, cb) => sum + parseFloat(cb.dataset.valor), 0);
+    document.getElementById('totalSelecionado').textContent = `R$ ${total.toFixed(2)}`;
+}
+
+function fecharModalSelecaoParcelas() {
+    const modal = document.getElementById('modalSelecaoParcelas');
+    if (modal) modal.remove();
+}
+
+async function confirmarSelecaoParcelas() {
+    const checkboxes = document.querySelectorAll('#modalSelecaoParcelas input[type="checkbox"]:checked');
+    
+    if (checkboxes.length === 0) {
+        showAlert('Selecione pelo menos uma parcela!', 'warning');
+        return;
+    }
+    
+    const ids = Array.from(checkboxes).map(cb => parseInt(cb.value));
+    const valorTotal = Array.from(checkboxes).reduce((sum, cb) => sum + parseFloat(cb.dataset.valor), 0);
+    const parcelas = Array.from(checkboxes).map(cb => cb.dataset.parcela);
+    
+    fecharModalSelecaoParcelas();
+    
+    // Mostrar modal de desconto
+    mostrarModalDesconto(ids, valorTotal, parcelas);
+}
+
+function mostrarModalDesconto(parcelasIds, valorTotal, parcelasInfo) {
+    const modalHTML = `
+        <div class="modal fade show" style="display: block; background: rgba(0,0,0,0.5);" id="modalDesconto">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title">
+                            <i class="bi bi-cash-coin"></i> Aplicar Desconto?
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" onclick="fecharModalDesconto()"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p><strong>Valor Total:</strong> R$ ${valorTotal.toFixed(2)}</p>
+                        <p><strong>Parcelas:</strong> ${parcelasInfo.join(', ')}</p>
+                        <hr>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="checkDesconto">
+                            <label class="form-check-label" for="checkDesconto">
+                                Aplicar desconto
+                            </label>
+                        </div>
+                        <div id="campoDesconto" style="display: none;" class="mt-3">
+                            <label class="form-label">Valor do desconto (R$)</label>
+                            <input type="number" class="form-control" id="inputDesconto" step="0.01" min="0" max="${valorTotal}" value="0">
+                            <small class="text-muted">Valor final: <span id="valorFinal">R$ ${valorTotal.toFixed(2)}</span></small>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="fecharModalDesconto()">Cancelar</button>
+                        <button type="button" class="btn btn-success" onclick="processarQuitacaoParcial(${JSON.stringify(parcelasIds)}, ${valorTotal})">Confirmar Quitação</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    const modalDiv = document.createElement('div');
+    modalDiv.innerHTML = modalHTML;
+    document.body.appendChild(modalDiv.firstElementChild);
+    
+    // Controlar exibição do campo de desconto
+    document.getElementById('checkDesconto').addEventListener('change', function() {
+        const campo = document.getElementById('campoDesconto');
+        campo.style.display = this.checked ? 'block' : 'none';
+        if (!this.checked) {
+            document.getElementById('inputDesconto').value = 0;
+            document.getElementById('valorFinal').textContent = `R$ ${valorTotal.toFixed(2)}`;
+        }
+    });
+    
+    document.getElementById('inputDesconto').addEventListener('input', function() {
+        const desconto = parseFloat(this.value) || 0;
+        const final = valorTotal - desconto;
+        document.getElementById('valorFinal').textContent = `R$ ${final.toFixed(2)}`;
+    });
+}
+
+function fecharModalDesconto() {
+    const modal = document.getElementById('modalDesconto');
+    if (modal) modal.remove();
+}
+
+async function processarQuitacaoParcial(parcelasIds, valorOriginal) {
+    try {
+        const desconto = document.getElementById('checkDesconto').checked 
+            ? parseFloat(document.getElementById('inputDesconto').value) || 0 
+            : 0;
+        
+        if (desconto < 0 || desconto > valorOriginal) {
             showAlert('Desconto inválido!', 'danger');
             return;
         }
         
-        const valorFinal = valorTotal - desconto;
-        const msg = desconto > 0
-            ? `Quitar ${data.length} parcelas por R$ ${valorFinal.toFixed(2)} (desconto de R$ ${desconto.toFixed(2)})?`
-            : `Quitar ${data.length} parcelas por R$ ${valorFinal.toFixed(2)}?`;
+        const valorFinal = valorOriginal - desconto;
         
-        if (!confirm(msg)) return;
+        fecharModalDesconto();
         
-        const ids = data.map(p => p.id);
+        // Buscar detalhes das parcelas
+        const { data, error: fetchError } = await supabase
+            .from('lancamentos')
+            .select('id, descricao, categoria_id, tipo, valor, parcela_atual, total_parcelas')
+            .in('id', parcelasIds);
+        
+        if (fetchError) throw fetchError;
         
         // Deletar as parcelas quitadas
         const { error: deleteError } = await supabase
             .from('lancamentos')
             .delete()
-            .in('id', ids);
+            .in('id', parcelasIds);
         
         if (deleteError) throw deleteError;
         
@@ -1805,7 +2015,7 @@ async function quitarParcial(parcelasIds) {
         const observacoes = JSON.stringify({
             tipo_quitacao: 'parcial',
             parcelas_quitadas: data.length,
-            valor_original: valorTotal,
+            valor_original: valorOriginal,
             desconto_aplicado: desconto,
             valor_pago: valorFinal,
             data_quitacao: hoje,
@@ -1833,13 +2043,12 @@ async function quitarParcial(parcelasIds) {
         
         if (insertError) throw insertError;
         
-        console.log(data.length, 'parcelas quitadas com sucesso');
         showAlert(`${data.length} parcelas quitadas! Valor pago: R$ ${valorFinal.toFixed(2)}`, 'success');
         await loadContasParceladas();
         if (currentPage === 'lancamentos') await loadLancamentos();
     } catch (err) {
         console.error('Erro ao quitar parcelas:', err);
-        showAlert('Erro ao quitar parcelas: ' + err.message, 'danger');
+        showAlert('Erro ao quitar: ' + err.message, 'danger');
     }
 }
 
@@ -2211,4 +2420,8 @@ window.quitarIntegral = quitarIntegral;
 window.quitarParcial = quitarParcial;
 window.verDetalhesQuitacao = verDetalhesQuitacao;
 window.fecharModalQuitacao = fecharModalQuitacao;
+window.fecharModalSelecaoParcelas = fecharModalSelecaoParcelas;
+window.confirmarSelecaoParcelas = confirmarSelecaoParcelas;
+window.fecharModalDesconto = fecharModalDesconto;
+window.processarQuitacaoParcial = processarQuitacaoParcial;
 window.gerarRelatorio = gerarRelatorio;
