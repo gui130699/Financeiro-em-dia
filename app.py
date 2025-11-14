@@ -512,6 +512,23 @@ def exportar_pdf():
         flash('Erro ao gerar relatório PDF.', 'danger')
         return redirect(url_for('relatorios'))
 
+# ==================== ROTAS PWA ====================
+
+@app.route('/offline')
+def offline():
+    """Página offline para PWA"""
+    return render_template('offline.html')
+
+@app.route('/service-worker.js')
+def service_worker():
+    """Servir o service worker"""
+    return send_file('static/service-worker.js', mimetype='application/javascript')
+
+@app.route('/manifest.json')
+def manifest():
+    """Servir o manifest do PWA"""
+    return send_file('static/manifest.json', mimetype='application/manifest+json')
+
 # ==================== EXECUTAR APLICAÇÃO ====================
 
 if __name__ == '__main__':

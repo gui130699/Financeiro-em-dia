@@ -1,10 +1,12 @@
-# 💰 Finanças em Dia
+# 💰 Finanças em Dia - PWA
 
-Sistema completo de controle financeiro pessoal desenvolvido com Flask e Supabase (PostgreSQL).
+Sistema completo de controle financeiro pessoal desenvolvido com Flask e Supabase (PostgreSQL).  
+**Agora como Progressive Web App (PWA)!** 📱
 
 ![Python](https://img.shields.io/badge/Python-3.14-blue)
 ![Flask](https://img.shields.io/badge/Flask-3.0.0-green)
 ![Supabase](https://img.shields.io/badge/Supabase-2.24.0-orange)
+![PWA](https://img.shields.io/badge/PWA-Ready-success)
 
 ## 🚀 Funcionalidades
 
@@ -18,230 +20,221 @@ Sistema completo de controle financeiro pessoal desenvolvido com Flask e Supabas
 - ✅ **Dashboard**: Resumo mensal com totais de receitas, despesas e saldo
 - ✅ **Banco em Nuvem**: Dados armazenados no Supabase (PostgreSQL)
 
+## 🌟 Recursos PWA
+
+- 📱 **Instalável**: Funciona como app nativo em qualquer dispositivo
+- 🔌 **Offline**: Páginas visitadas funcionam sem internet
+- ⚡ **Rápido**: Cache inteligente para carregamento instantâneo
+- 🎨 **Responsivo**: Interface otimizada para mobile e desktop
+- 🔔 **Indicador de Status**: Mostra quando está online/offline
+- 💾 **Cache Automático**: Service Worker gerencia recursos automaticamente
+
 ## 📋 Pré-requisitos
 
 - Python 3.10 ou superior
 - Conta no [Supabase](https://supabase.com) (gratuita)
 - pip (gerenciador de pacotes Python)
 
-## 🔧 Instalação
+## 🔧 Instalação Rápida
 
 ### 1. Clone o repositório
-
 ```bash
-git clone https://github.com/SEU_USUARIO/financas-em-dia.git
-cd financas-em-dia
+git clone https://github.com/gui130699/Financeiro-em-dia.git
+cd Financeiro-em-dia
 ```
 
-### 2. Crie e ative um ambiente virtual
-
+### 2. Crie e ative o ambiente virtual
 ```bash
 python -m venv venv
-
-# Windows
-venv\Scripts\activate
-
-# Linux/Mac
-source venv/bin/activate
+venv\Scripts\activate  # Windows
 ```
 
 ### 3. Instale as dependências
-
 ```bash
 pip install -r requirements.txt
 ```
 
 ### 4. Configure o Supabase
-
 1. Crie uma conta em [supabase.com](https://supabase.com)
 2. Crie um novo projeto
-3. Vá em **SQL Editor** e execute o script `criar_tabelas_supabase.sql`
-4. Execute também o script `corrigir_rls_supabase.sql` para desabilitar RLS
-5. Copie a **URL** e **anon key** do seu projeto (Settings > API)
+3. Execute o script `criar_tabelas_supabase.sql` no SQL Editor
+4. Copie a URL e anon key (Settings > API)
+5. Edite `config.py` com suas credenciais
 
-### 5. Configure as credenciais
-
-Edite o arquivo `config.py`:
-```python
-SUPABASE_URL = 'https://seu-projeto.supabase.co'
-SUPABASE_KEY = 'sua-chave-anon-aqui'
-```
-
-## ▶️ Como Executar
-
-### 1. Inicie o servidor Flask
-
-```powershell
+### 5. Execute o aplicativo
+```bash
 python app.py
 ```
 
-### 2. Acesse no navegador
+Acesse: http://127.0.0.1:5000
 
-Abra seu navegador e acesse:
-```
-http://127.0.0.1:5000
-```
+## 📱 Instalando como PWA
 
-## 👤 Primeiro Acesso
+### No Desktop (Chrome/Edge):
+1. Abra o app no navegador
+2. Clique no ícone de instalação (+) na barra de endereço
+3. Ou use o botão "Instalar App" que aparece na tela
 
-1. Ao acessar pela primeira vez, clique em **"Criar nova conta"**
-2. Cadastre seu usuário e senha
-3. Faça login com as credenciais criadas
-4. O sistema criará automaticamente categorias padrão para você
+### No Android:
+1. Abra no Chrome
+2. Menu > "Instalar app" ou "Adicionar à tela inicial"
+
+### No iOS:
+1. Abra no Safari
+2. Compartilhar > "Adicionar à Tela Inicial"
 
 ## 📁 Estrutura do Projeto
 
 ```
 Fin/
 ├── app.py                    # Aplicação Flask principal
-├── database.py               # Gerenciamento do banco de dados
-├── models.py                 # Funções CRUD e lógica de negócio
-├── requirements.txt          # Dependências do projeto
-├── README.md                # Este arquivo
+├── database.py               # Gerenciamento do banco Supabase
+├── models.py                 # Lógica de negócio
+├── models_supabase.py        # Modelos específicos Supabase
+├── config.py                 # Configurações (URL e Key)
+├── requirements.txt          # Dependências
+├── iniciar.bat              # Script para iniciar (Windows)
+├── Procfile                 # Deploy Heroku
+├── PWA_GUIA.md             # Guia detalhado do PWA
 │
 ├── templates/               # Templates HTML
-│   ├── base.html           # Template base
-│   ├── login.html          # Tela de login
-│   ├── registrar.html      # Tela de registro
-│   ├── home.html           # Dashboard principal
-│   ├── lancamentos.html    # Gestão de lançamentos
-│   ├── categorias.html     # Gestão de categorias
-│   ├── contas_fixas.html   # Gestão de contas fixas
-│   ├── contas_parceladas.html  # Gestão de parcelados
-│   ├── relatorios.html     # Relatórios e exportação
-│   ├── editar_lancamento.html
-│   ├── editar_conta_fixa.html
-│   └── quitar_parcelado.html
+│   ├── base.html           # Template base com PWA
+│   ├── home.html           # Dashboard
+│   ├── lancamentos.html    # Lançamentos
+│   ├── categorias.html     # Categorias
+│   ├── contas_fixas.html   # Contas fixas
+│   ├── contas_parceladas.html
+│   ├── relatorios.html
+│   ├── offline.html        # Página offline PWA
+│   └── ...
 │
-├── static/                  # Arquivos estáticos
-│   ├── css/
-│   │   └── estilo.css      # Estilos personalizados
-│   └── js/
-│       └── scripts.js      # Scripts JavaScript
-│
-├── relatorios/             # PDFs gerados (criado automaticamente)
-└── financas_em_dia.db      # Banco de dados SQLite (criado automaticamente)
+└── static/                  # Arquivos estáticos
+    ├── manifest.json       # Configuração PWA
+    ├── service-worker.js   # Service Worker
+    ├── icons/              # Ícones PWA (todos os tamanhos)
+    ├── css/estilo.css
+    └── js/
+        ├── scripts.js
+        └── pwa-install.js  # Lógica de instalação
 ```
 
-## 🎨 Recursos Visuais
+## 🎯 Como Usar
 
-### Cores dos Lançamentos
-- **Despesa Pendente**: Vermelho
-- **Despesa Paga**: Verde
-- **Receita A Receber**: Laranja
-- **Receita Recebida**: Preto
+### 1. Primeiro Acesso
+- Clique em "Criar nova conta"
+- Cadastre usuário e senha
+- Faça login
+- Categorias padrão serão criadas automaticamente
 
-### Interface
-- Design moderno com Bootstrap 5
-- Responsivo (funciona em dispositivos móveis)
-- Ícones do Bootstrap Icons
-- Animações suaves
+### 2. Lançamentos
+- **Simples**: Preencha data, tipo, valor e descrição
+- **Parcelado**: Defina número de parcelas (geração automática)
+- **Conta Fixa**: Marque como fixa e defina dia de vencimento
 
-## 📊 Como Usar
+### 3. Contas Fixas
+- Gerencie contas recorrentes (aluguel, internet, etc.)
+- Use "Gerar p/ Mês" para criar lançamentos automaticamente
 
-### Lançamentos
+### 4. Quitação de Parcelados
+- **Integral**: Quita todas as parcelas (com desconto opcional)
+- **Parcial**: Escolha quais parcelas quitar
 
-1. **Criar Lançamento Simples**:
-   - Vá em "Lançamentos"
-   - Preencha data, tipo, valor, descrição e categoria
-   - Clique em "Salvar Lançamento"
-
-2. **Criar Lançamento Parcelado**:
-   - Preencha os dados do lançamento
-   - Defina o número de parcelas (ex: 12)
-   - O sistema criará automaticamente as parcelas mensais
-
-3. **Criar Conta Fixa**:
-   - Preencha os dados do lançamento
-   - Marque "Conta Fixa"
-   - Defina o dia de vencimento
-   - Use o botão "Gerar p/ Mês" para criar lançamentos automaticamente
-
-### Contas Fixas
-
-- Gerencie suas contas recorrentes (aluguel, internet, etc.)
-- Ative/desative conforme necessário
-- Gere lançamentos automaticamente para qualquer mês
-
-### Contas Parceladas
-
-- Visualize todos os contratos com parcelas pendentes
-- **Quitação Integral**: Quita todas as parcelas de uma vez (com desconto opcional)
-- **Quitação Parcial**: Escolha quais parcelas quitar
-
-### Relatórios
-
-- Selecione um período (data inicial e final)
-- Visualize totais de receitas, despesas e saldo
-- Veja análise por categoria
+### 5. Relatórios
+- Selecione período
+- Visualize totais e análise por categoria
 - Exporte para PDF
 
 ## 🔒 Segurança
 
-- Senhas criptografadas com bcrypt
-- Sessões seguras do Flask
-- Validações no backend
-- Proteção contra SQL Injection (via parametrização)
+- ✅ Senhas criptografadas com bcrypt
+- ✅ Sessões seguras do Flask
+- ✅ Validações no backend
+- ✅ Proteção contra SQL Injection
+- ✅ HTTPS obrigatório em produção
 
-## 🛠️ Tecnologias Utilizadas
+## 🛠️ Tecnologias
 
 - **Backend**: Python 3.14, Flask 3.0.0
 - **Banco de Dados**: PostgreSQL via Supabase 2.24.0
 - **Frontend**: HTML5, CSS3, JavaScript
 - **Framework CSS**: Bootstrap 5
-- **Ícones**: Bootstrap Icons
-- **Relatórios**: ReportLab 4.0.7 (PDF)
+- **PWA**: Service Worker, Manifest, Cache API
+- **Relatórios**: ReportLab 4.0.7
 - **Segurança**: BCrypt 4.1.1
-- **Datas**: python-dateutil 2.9.0
 
-## 📝 Dicas de Uso
+## 🌐 Deploy
 
-1. **Gerar Contas Fixas**: No início de cada mês, vá em "Lançamentos" e clique em "Gerar p/ Mês"
-2. **Filtros**: Use os filtros por categoria e status para encontrar lançamentos específicos
-3. **Alterar Status**: Clique no botão de alternar status para marcar receitas/despesas como pagas
-4. **Backup**: Faça backup do arquivo `financas_em_dia.db` periodicamente
-
-## 🐛 Solução de Problemas
-
-### Erro ao instalar dependências
-```powershell
-pip install --upgrade pip
-pip install -r requirements.txt
+### Heroku
+```bash
+git push heroku main
 ```
 
-### Porta 5000 já em uso
-Edite `app.py` e altere a porta:
+### Vercel/Netlify
+Configure para servir com Flask/WSGI
+
+**Importante**: HTTPS é obrigatório para PWA funcionar em produção!
+
+## 📊 PWA - Teste de Qualidade
+
+Use o Lighthouse no Chrome DevTools:
+1. F12 > Lighthouse
+2. Selecione "Progressive Web App"
+3. Execute análise
+
+**Meta**: Score 90+ para PWA ✅
+
+## 🔍 Solução de Problemas
+
+### Service Worker não registra
+- ✅ Use HTTPS ou localhost
+- ✅ Limpe cache: DevTools > Application > Clear Storage
+
+### App não instala
+- ✅ Navegue pelo site por 30s primeiro
+- ✅ Verifique manifest: DevTools > Application > Manifest
+
+### Offline não funciona
+- ✅ Navegue pelas páginas online primeiro (para cachear)
+- ✅ Verifique Service Worker ativo: DevTools > Application
+
+### Porta 5000 em uso
 ```python
-app.run(debug=True, host='127.0.0.1', port=5001)
+# Em app.py, mude a porta:
+app.run(debug=True, port=5001)
 ```
 
-### Banco de dados corrompido
-1. Faça backup do arquivo `financas_em_dia.db`
-2. Delete o arquivo
-3. Execute `python app.py` novamente para criar um novo banco
+## 📈 Roadmap Futuro
 
-## 📈 Próximas Melhorias (Futuro)
+- [ ] Push Notifications para alertas de vencimento
+- [ ] Background Sync para dados offline
+- [ ] Gráficos interativos avançados
+- [ ] Exportar para Excel
+- [ ] Metas e orçamentos
+- [ ] Integração com Open Banking
 
-- [ ] Gráficos interativos
-- [ ] Metas financeiras
-- [ ] Integração com bancos
-- [ ] App mobile
-- [ ] Notificações de vencimento
-- [ ] Backup automático em nuvem
+## 📖 Documentação Adicional
+
+- **PWA_GUIA.md** - Guia completo sobre o PWA e recursos avançados
 
 ## 👨‍💻 Desenvolvimento
 
-Desenvolvido com ❤️ usando Python e Flask.
+Desenvolvido com ❤️ usando Python, Flask e tecnologias PWA.
 
-**Versão**: 1.0.0  
+**Versão**: 2.0.0 - PWA Edition  
 **Data**: Novembro 2025
 
 ## 📄 Licença
 
 Este projeto é de uso pessoal e educacional.
 
+## 🤝 Contribuindo
+
+1. Fork o projeto
+2. Crie uma branch: `git checkout -b feature/nova-funcionalidade`
+3. Commit: `git commit -m 'Adiciona nova funcionalidade'`
+4. Push: `git push origin feature/nova-funcionalidade`
+5. Abra um Pull Request
+
 ---
 
-**Dúvidas?** Consulte a documentação ou abra uma issue no repositório.
-
-💰 **Mantenha suas finanças em dia!** 💰
+💰 **Mantenha suas finanças em dia - em qualquer lugar, online ou offline!** 💰 📱

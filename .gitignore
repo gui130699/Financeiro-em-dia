@@ -18,10 +18,21 @@ __pycache__/
 *.so
 
 # Relatórios gerados
-relatorios/*.pdf
+relatorios/
+*.pdf
 
 # Logs
 *.log
+
+# Scripts de teste e auxiliares
+teste_*.py
+testar_*.py
+listar_*.py
+buscar_*.py
+criar_dados_*.py
+corrigir_*.py
+verificar_*.py
+gerar_icones.py
 
 # Configurações do IDE
 .vscode/
@@ -63,6 +74,6 @@ dist/
 build/
 *.egg-info/
 
-teste_*.py
-listar_usuarios.py
-buscar_usuario.py
+# Documentação temporária
+*_GUIA_TEMP.md
+*_TESTE_TEMP.md

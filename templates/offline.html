@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Offline - Finanças em Dia{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6 text-center">
+        <div class="card shadow">
+            <div class="card-body p-5">
+                <i class="bi bi-wifi-off display-1 text-warning mb-4"></i>
+                <h2 class="card-title mb-3">Você está offline</h2>
+                <p class="card-text text-muted mb-4">
+                    Parece que você perdeu a conexão com a internet. 
+                    Algumas funcionalidades podem estar limitadas.
+                </p>
+                
+                <div class="alert alert-info" role="alert">
+                    <i class="bi bi-info-circle"></i>
+                    <strong>Dica:</strong> Algumas páginas que você visitou recentemente 
+                    podem estar disponíveis mesmo offline.
+                </div>
+                
+                <button class="btn btn-primary btn-lg" onclick="window.location.reload()">
+                    <i class="bi bi-arrow-clockwise"></i> Tentar Novamente
+                </button>
+                
+                <hr class="my-4">
+                
+                <h5 class="mb-3">Páginas em Cache</h5>
+                <div class="list-group">
+                    <a href="/" class="list-group-item list-group-item-action">
+                        <i class="bi bi-house-door"></i> Página Inicial
+                    </a>
+                    <a href="/lancamentos" class="list-group-item list-group-item-action">
+                        <i class="bi bi-journal-text"></i> Lançamentos
+                    </a>
+                    <a href="/categorias" class="list-group-item list-group-item-action">
+                        <i class="bi bi-tags"></i> Categorias
+                    </a>
+                    <a href="/relatorios" class="list-group-item list-group-item-action">
+                        <i class="bi bi-file-earmark-bar-graph"></i> Relatórios
+                    </a>
+                </div>
+                
+                <div class="mt-4">
+                    <small class="text-muted">
+                        <i class="bi bi-shield-check"></i> 
+                        Seus dados estão seguros e serão sincronizados quando você voltar online.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bi-wifi-off {
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+</style>
+{% endblock %}
