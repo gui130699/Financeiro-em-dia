@@ -1,7 +1,7 @@
 // ============================================
 // FINANCEIRO EM DIA - PWA
 // Todas as funcionalidades do Flask convertidas para JavaScript
-// Versão: 2025-11-14 20:30 - Removido contrato_parcelado do banco
+// Versão: 2025-11-14 21:00 - Tipo automático da categoria + status inicial pendente
 // ============================================
 
 // Configuração do Supabase
@@ -553,25 +553,11 @@ function getLancamentosHTML() {
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-md-3 mb-3">
+                            <div class="col-md-6 mb-3">
                                 <label class="form-label">Valor</label>
                                 <input type="number" step="0.01" class="form-control" id="lanc-valor" required>
                             </div>
-                            <div class="col-md-3 mb-3">
-                                <label class="form-label">Tipo</label>
-                                <select class="form-select" id="lanc-tipo" required>
-                                    <option value="despesa">Despesa</option>
-                                    <option value="receita">Receita</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <label class="form-label">Status</label>
-                                <select class="form-select" id="lanc-status" required>
-                                    <option value="pago">Pago</option>
-                                    <option value="pendente">Pendente</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3 mb-3">
+                            <div class="col-md-6 mb-3">
                                 <label class="form-label">Parcelas</label>
                                 <input type="number" class="form-control" id="lanc-parcelas" min="1" value="1">
                             </div>
@@ -664,16 +650,24 @@ async function handleAddLancamento(event) {
     const descricao = document.getElementById('lanc-descricao').value;
     const categoria_id = parseInt(document.getElementById('lanc-categoria').value);
     const valor = parseFloat(document.getElementById('lanc-valor').value);
-    const tipo = document.getElementById('lanc-tipo').value;
-    const status = document.getElementById('lanc-status').value;
     const parcelas = parseInt(document.getElementById('lanc-parcelas').value) || 1;
     
     try {
+        // Buscar o tipo da categoria selecionada
+        const { data: categoria, error: catError } = await supabase
+            .from('categorias')
+            .select('tipo')
+            .eq('id', categoria_id)
+            .single();
+        
+        if (catError) throw catError;
+        const tipo = categoria.tipo;
+        
         if (parcelas > 1) {
-            // Criar lançamento parcelado
-            await criarLancamentoParcelado(data, descricao, categoria_id, valor, tipo, status, parcelas);
+            // Criar lançamento parcelado (sempre pendente)
+            await criarLancamentoParcelado(data, descricao, categoria_id, valor, tipo, parcelas);
         } else {
-            // Criar lançamento simples
+            // Criar lançamento simples (sempre pendente)
             const { error } = await supabase
                 .from('lancamentos')
                 .insert([{
@@ -683,11 +677,13 @@ async function handleAddLancamento(event) {
                     categoria_id,
                     valor,
                     tipo,
-                status,
-                conta_fixa_id: null,
-                parcela_atual: null,
-                parcela_total: null
-            }]);            if (error) throw error;
+                    status: 'pendente',
+                    conta_fixa_id: null,
+                    parcela_atual: null,
+                    parcela_total: null
+                }]);
+            
+            if (error) throw error;
         }
         
         showAlert('Lançamento adicionado com sucesso!', 'success');
@@ -700,7 +696,7 @@ async function handleAddLancamento(event) {
     }
 }
 
-async function criarLancamentoParcelado(dataInicial, descricao, categoria_id, valorTotal, tipo, status, parcelas) {
+async function criarLancamentoParcelado(dataInicial, descricao, categoria_id, valorTotal, tipo, parcelas) {
     const contratoId = `${Date.now()}_${currentUser.id}`;
     const valorParcela = valorTotal / parcelas;
     
@@ -716,7 +712,7 @@ async function criarLancamentoParcelado(dataInicial, descricao, categoria_id, va
             categoria_id,
             valor: valorParcela,
             tipo,
-            status: i === 0 ? status : 'pendente',
+            status: 'pendente',
             conta_fixa_id: null,
             parcela_atual: i + 1,
             parcela_total: parcelas
