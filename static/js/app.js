@@ -1,7 +1,7 @@
 // ============================================
 // FINANCEIRO EM DIA - PWA
 // Todas as funcionalidades do Flask convertidas para JavaScript
-// Versão: 2025-11-14 21:00 - Tipo automático da categoria + status inicial pendente
+// Versão: 2025-11-14 21:15 - Categorias mostram tipo entre parênteses
 // ============================================
 
 // Configuração do Supabase
@@ -627,7 +627,7 @@ async function loadCategorias() {
             if (select) {
                 const currentValue = select.value;
                 select.innerHTML = '<option value="">Selecione...</option>' +
-                    categorias.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
+                    categorias.map(c => `<option value="${c.id}">${c.nome} (${c.tipo.charAt(0).toUpperCase() + c.tipo.slice(1)})</option>`).join('');
                 if (currentValue) select.value = currentValue;
             }
         });
