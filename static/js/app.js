@@ -1,6 +1,7 @@
 // ============================================
 // FINANCEIRO EM DIA - PWA
 // Todas as funcionalidades do Flask convertidas para JavaScript
+// Versão: 2025-11-14 20:00 - Fix contas parceladas
 // ============================================
 
 // Configuração do Supabase
@@ -1256,7 +1257,13 @@ async function loadContasFixas() {
         
         console.log('Contas fixas carregadas:', data?.length || 0);
         contasFixas = data || [];
-        displayContasFixas();
+        
+        // Verificar se elemento existe antes de chamar display
+        if (document.getElementById('contas-fixas-list')) {
+            displayContasFixas();
+        } else {
+            console.error('Elemento contas-fixas-list não encontrado no DOM!');
+        }
     } catch (err) {
         console.error('Erro ao carregar contas fixas:', err);
         const listEl = document.getElementById('contas-fixas-list');
@@ -1267,6 +1274,8 @@ async function loadContasFixas() {
                     <br><small>Verifique o console para mais detalhes</small>
                 </div>
             `;
+        } else {
+            console.error('Não foi possível mostrar erro: elemento não existe');
         }
         showAlert('Erro ao carregar contas fixas: ' + err.message, 'danger');
     }
