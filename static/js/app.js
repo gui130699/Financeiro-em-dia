@@ -1,7 +1,7 @@
 // ============================================
 // FINANCEIRO EM DIA - PWA
 // Todas as funcionalidades do Flask convertidas para JavaScript
-// Versão: 2025-11-14 22:15 - Coluna Parcelas no grid (formato X/Y)
+// Versão: 2025-11-14 23:00 - Quitação com desconto e modal de detalhes
 // ============================================
 
 // Configuração do Supabase
@@ -797,11 +797,12 @@ async function loadLancamentos() {
             const classeValor = lanc.tipo === 'receita' ? 'text-success' : 'text-danger';
             const descricaoBase = lanc.descricao.split(' (')[0]; // Remove info de parcela da descrição
             const parcelaDisplay = lanc.parcela_atual && lanc.total_parcelas ? `${lanc.parcela_atual}/${lanc.total_parcelas}` : '-';
+            const isQuitacao = lanc.descricao.includes('Quitação');
             
             html += `
                 <tr>
                     <td>${formatDate(lanc.data)}</td>
-                    <td>${descricaoBase}</td>
+                    <td>${lanc.descricao}</td>
                     <td><span class="badge bg-secondary">${lanc.categorias ? lanc.categorias.nome : '-'}</span></td>
                     <td class="${classeValor}"><strong>R$ ${valor}</strong></td>
                     <td><span class="badge ${lanc.tipo === 'receita' ? 'bg-success' : 'bg-danger'}">${lanc.tipo}</span></td>
@@ -810,6 +811,9 @@ async function loadLancamentos() {
                         <span class="badge ${lanc.status === 'pago' ? 'bg-success' : 'bg-warning'}">${lanc.status === 'pago' ? 'Pago' : 'Pendente'}</span>
                     </td>
                     <td>
+                        ${isQuitacao ? `<button class="btn btn-sm btn-info" onclick="verDetalhesQuitacao(${lanc.id})" title="Ver Detalhes da Quitação">
+                            <i class="bi bi-info-circle"></i>
+                        </button>` : ''}
                         <button class="btn btn-sm ${lanc.status === 'pago' ? 'btn-success' : 'btn-warning'}" 
                                 onclick="toggleStatus(${lanc.id}, '${lanc.status}')" 
                                 title="${lanc.status === 'pago' ? 'Marcar como Pendente' : 'Marcar como Pago'}">
@@ -1672,19 +1676,63 @@ async function quitarIntegral(parcelasIds, valorPendente) {
     
     try {
         console.log('Executando quitação integral...');
-        const { error } = await supabase
+        
+        // Buscar informações das parcelas
+        const { data: parcelas, error: fetchError } = await supabase
             .from('lancamentos')
-            .update({ status: 'pago' })
+            .select('id, descricao, categoria_id, tipo, parcela_atual, total_parcelas')
             .in('id', parcelasIds);
         
-        if (error) {
-            console.error('Erro ao quitar:', error);
-            throw error;
-        }
+        if (fetchError) throw fetchError;
+        
+        // Deletar as parcelas pendentes
+        const { error: deleteError } = await supabase
+            .from('lancamentos')
+            .delete()
+            .in('id', parcelasIds);
+        
+        if (deleteError) throw deleteError;
+        
+        // Criar lançamento único de quitação com data de hoje
+        const hoje = new Date().toISOString().split('T')[0];
+        const descricaoBase = parcelas[0].descricao.split(' (')[0];
+        const categoria_id = parcelas[0].categoria_id;
+        const tipo = parcelas[0].tipo;
+        
+        const observacoes = JSON.stringify({
+            tipo_quitacao: 'integral',
+            parcelas_quitadas: parcelasIds.length,
+            valor_original: valorPendente,
+            desconto_aplicado: desconto,
+            valor_pago: valorFinal,
+            data_quitacao: hoje,
+            parcelas_detalhes: parcelas.map(p => ({
+                id: p.id,
+                parcela: `${p.parcela_atual}/${p.total_parcelas}`
+            }))
+        });
+        
+        const { error: insertError } = await supabase
+            .from('lancamentos')
+            .insert([{
+                usuario_id: currentUser.id,
+                data: hoje,
+                descricao: `${descricaoBase} - Quitação Integral`,
+                categoria_id,
+                valor: valorFinal,
+                tipo,
+                status: 'pago',
+                conta_fixa_id: null,
+                parcela_atual: null,
+                observacoes
+            }]);
+        
+        if (insertError) throw insertError;
         
         console.log('Quitação integral realizada com sucesso');
-        showAlert('Quitação integral realizada com sucesso!', 'success');
+        showAlert(`Quitação integral realizada! Valor pago: R$ ${valorFinal.toFixed(2)}`, 'success');
         await loadContasParceladas();
+        if (currentPage === 'lancamentos') await loadLancamentos();
     } catch (err) {
         console.error('Erro ao quitar:', err);
         showAlert('Erro ao quitar: ' + err.message, 'danger');
@@ -1710,8 +1758,9 @@ async function quitarParcial(parcelasIds) {
         console.log('Buscando', quantas, 'parcelas pendentes...');
         const { data, error } = await supabase
             .from('lancamentos')
-            .select('*')
+            .select('id, descricao, categoria_id, tipo, valor, parcela_atual, total_parcelas')
             .in('id', parcelasIds)
+            .eq('status', 'pendente')
             .order('parcela_atual')
             .limit(quantas);
         
@@ -1728,24 +1777,71 @@ async function quitarParcial(parcelasIds) {
         }
         
         const valorTotal = data.reduce((sum, p) => sum + parseFloat(p.valor), 0);
+        const desconto = parseFloat(prompt(`Valor total: R$ ${valorTotal.toFixed(2)}\n\nInforme o desconto (em R$):`, '0') || 0);
         
-        if (!confirm(`Quitar ${data.length} parcelas por R$ ${valorTotal.toFixed(2)}?`)) return;
+        if (desconto < 0 || desconto > valorTotal) {
+            showAlert('Desconto inválido!', 'danger');
+            return;
+        }
+        
+        const valorFinal = valorTotal - desconto;
+        const msg = desconto > 0
+            ? `Quitar ${data.length} parcelas por R$ ${valorFinal.toFixed(2)} (desconto de R$ ${desconto.toFixed(2)})?`
+            : `Quitar ${data.length} parcelas por R$ ${valorFinal.toFixed(2)}?`;
+        
+        if (!confirm(msg)) return;
         
         const ids = data.map(p => p.id);
         
-        const { error: updateError } = await supabase
+        // Deletar as parcelas quitadas
+        const { error: deleteError } = await supabase
             .from('lancamentos')
-            .update({ status: 'pago' })
+            .delete()
             .in('id', ids);
         
-        if (updateError) {
-            console.error('Erro ao atualizar parcelas:', updateError);
-            throw updateError;
-        }
+        if (deleteError) throw deleteError;
+        
+        // Criar lançamento único de quitação com data de hoje
+        const hoje = new Date().toISOString().split('T')[0];
+        const descricaoBase = data[0].descricao.split(' (')[0];
+        const categoria_id = data[0].categoria_id;
+        const tipo = data[0].tipo;
+        
+        const observacoes = JSON.stringify({
+            tipo_quitacao: 'parcial',
+            parcelas_quitadas: data.length,
+            valor_original: valorTotal,
+            desconto_aplicado: desconto,
+            valor_pago: valorFinal,
+            data_quitacao: hoje,
+            parcelas_detalhes: data.map(p => ({
+                id: p.id,
+                parcela: `${p.parcela_atual}/${p.total_parcelas}`,
+                valor: parseFloat(p.valor)
+            }))
+        });
+        
+        const { error: insertError } = await supabase
+            .from('lancamentos')
+            .insert([{
+                usuario_id: currentUser.id,
+                data: hoje,
+                descricao: `${descricaoBase} - Quitação Parcial (${data.length} parcelas)`,
+                categoria_id,
+                valor: valorFinal,
+                tipo,
+                status: 'pago',
+                conta_fixa_id: null,
+                parcela_atual: null,
+                observacoes
+            }]);
+        
+        if (insertError) throw insertError;
         
         console.log(data.length, 'parcelas quitadas com sucesso');
-        showAlert(`${data.length} parcelas quitadas com sucesso!`, 'success');
+        showAlert(`${data.length} parcelas quitadas! Valor pago: R$ ${valorFinal.toFixed(2)}`, 'success');
         await loadContasParceladas();
+        if (currentPage === 'lancamentos') await loadLancamentos();
     } catch (err) {
         console.error('Erro ao quitar parcelas:', err);
         showAlert('Erro ao quitar parcelas: ' + err.message, 'danger');
@@ -1997,6 +2093,82 @@ function formatDate(dateString) {
     return `${day}/${month}/${year}`;
 }
 
+async function verDetalhesQuitacao(lancamentoId) {
+    try {
+        const { data, error } = await supabase
+            .from('lancamentos')
+            .select('*')
+            .eq('id', lancamentoId)
+            .single();
+        
+        if (error) throw error;
+        
+        if (!data.observacoes) {
+            showAlert('Este lançamento não possui detalhes de quitação.', 'info');
+            return;
+        }
+        
+        const obs = JSON.parse(data.observacoes);
+        
+        let detalhesHTML = `
+            <div class="modal fade show" style="display: block; background: rgba(0,0,0,0.5);" id="modalQuitacao">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header bg-info text-white">
+                            <h5 class="modal-title">
+                                <i class="bi bi-info-circle"></i> Detalhes da Quitação
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" onclick="fecharModalQuitacao()"></button>
+                        </div>
+                        <div class="modal-body">
+                            <h6><strong>Lançamento:</strong> ${data.descricao}</h6>
+                            <hr>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Tipo:</strong> <span class="badge ${obs.tipo_quitacao === 'integral' ? 'bg-success' : 'bg-warning'}">${obs.tipo_quitacao.toUpperCase()}</span></p>
+                                    <p><strong>Data da Quitação:</strong> ${formatDate(obs.data_quitacao)}</p>
+                                    <p><strong>Parcelas Quitadas:</strong> ${obs.parcelas_quitadas}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Valor Original:</strong> <span class="text-muted">R$ ${obs.valor_original.toFixed(2)}</span></p>
+                                    <p><strong>Desconto Aplicado:</strong> <span class="text-danger">R$ ${obs.desconto_aplicado.toFixed(2)}</span></p>
+                                    <p><strong>Valor Pago:</strong> <span class="text-success"><strong>R$ ${obs.valor_pago.toFixed(2)}</strong></span></p>
+                                </div>
+                            </div>
+                            <hr>
+                            <h6>Parcelas Quitadas:</h6>
+                            <ul>
+                                ${obs.parcelas_detalhes.map(p => `
+                                    <li>Parcela ${p.parcela}${p.valor ? ` - R$ ${p.valor.toFixed(2)}` : ''}</li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" onclick="fecharModalQuitacao()">Fechar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Adicionar modal ao body
+        const modalDiv = document.createElement('div');
+        modalDiv.innerHTML = detalhesHTML;
+        document.body.appendChild(modalDiv.firstElementChild);
+        
+    } catch (err) {
+        console.error('Erro ao carregar detalhes:', err);
+        showAlert('Erro ao carregar detalhes da quitação', 'danger');
+    }
+}
+
+function fecharModalQuitacao() {
+    const modal = document.getElementById('modalQuitacao');
+    if (modal) {
+        modal.remove();
+    }
+}
+
 function getNomeMes(mesAno = mesAtual) {
     const [year, month] = mesAno.split('-');
     const meses = [
@@ -2042,4 +2214,6 @@ window.deleteContaFixa = deleteContaFixa;
 window.gerarContasFixasMes = gerarContasFixasMes;
 window.quitarIntegral = quitarIntegral;
 window.quitarParcial = quitarParcial;
+window.verDetalhesQuitacao = verDetalhesQuitacao;
+window.fecharModalQuitacao = fecharModalQuitacao;
 window.gerarRelatorio = gerarRelatorio;
