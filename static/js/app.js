@@ -1024,30 +1024,33 @@ function displayCategorias() {
     const despesas = categorias.filter(c => c.tipo === 'despesa');
     const receitas = categorias.filter(c => c.tipo === 'receita');
     
-    let html = '<div class="table-responsive">';
+    let html = '<div class="row">';
     
+    // Coluna de Despesas
+    html += '<div class="col-md-6">';
     if (despesas.length > 0) {
         html += `
-            <h4 class="mt-3"><i class="bi bi-arrow-down-circle text-danger"></i> Despesas</h4>
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th>Nome</th>
-                        <th style="width: 200px;">Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
+            <h5><i class="bi bi-arrow-down-circle text-danger"></i> Despesas</h5>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th style="width: 80px;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
         `;
         despesas.forEach(cat => {
             html += `
                 <tr>
-                    <td><strong>${cat.nome}</strong></td>
+                    <td>${cat.nome}</td>
                     <td>
                         <div class="btn-group btn-group-sm">
-                            <button class="btn btn-outline-primary" onclick="editarCategoria(${cat.id})" title="Editar">
+                            <button class="btn btn-outline-primary btn-sm" onclick="editarCategoria(${cat.id})" title="Editar">
                                 <i class="bi bi-pencil"></i>
                             </button>
-                            <button class="btn btn-outline-danger" onclick="deleteCategoria(${cat.id})" title="Excluir">
+                            <button class="btn btn-outline-danger btn-sm" onclick="deleteCategoria(${cat.id})" title="Excluir">
                                 <i class="bi bi-trash"></i>
                             </button>
                         </div>
@@ -1055,31 +1058,37 @@ function displayCategorias() {
                 </tr>
             `;
         });
-        html += '</tbody></table>';
+        html += '</tbody></table></div>';
+    } else {
+        html += '<p class="text-muted">Nenhuma categoria de despesa</p>';
     }
+    html += '</div>';
     
+    // Coluna de Receitas
+    html += '<div class="col-md-6">';
     if (receitas.length > 0) {
         html += `
-            <h4 class="mt-4"><i class="bi bi-arrow-up-circle text-success"></i> Receitas</h4>
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th>Nome</th>
-                        <th style="width: 200px;">Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
+            <h5><i class="bi bi-arrow-up-circle text-success"></i> Receitas</h5>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th style="width: 80px;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
         `;
         receitas.forEach(cat => {
             html += `
                 <tr>
-                    <td><strong>${cat.nome}</strong></td>
+                    <td>${cat.nome}</td>
                     <td>
                         <div class="btn-group btn-group-sm">
-                            <button class="btn btn-outline-primary" onclick="editarCategoria(${cat.id})" title="Editar">
+                            <button class="btn btn-outline-primary btn-sm" onclick="editarCategoria(${cat.id})" title="Editar">
                                 <i class="bi bi-pencil"></i>
                             </button>
-                            <button class="btn btn-outline-danger" onclick="deleteCategoria(${cat.id})" title="Excluir">
+                            <button class="btn btn-outline-danger btn-sm" onclick="deleteCategoria(${cat.id})" title="Excluir">
                                 <i class="bi bi-trash"></i>
                             </button>
                         </div>
@@ -1087,8 +1096,11 @@ function displayCategorias() {
                 </tr>
             `;
         });
-        html += '</tbody></table>';
+        html += '</tbody></table></div>';
+    } else {
+        html += '<p class="text-muted">Nenhuma categoria de receita</p>';
     }
+    html += '</div>';
     
     html += '</div>';
     listEl.innerHTML = html;
@@ -1262,6 +1274,11 @@ async function loadContasFixas() {
 
 function displayContasFixas() {
     const listEl = document.getElementById('contas-fixas-list');
+    
+    if (!listEl) {
+        console.error('Elemento contas-fixas-list não encontrado!');
+        return;
+    }
     
     if (contasFixas.length === 0) {
         listEl.innerHTML = `
@@ -1468,7 +1485,7 @@ async function loadContasParceladas() {
             .from('lancamentos')
             .select('*')
             .eq('usuario_id', currentUser.id)
-            .not('contrato_parcelado', 'is', null)
+            .not('parcela_atual', 'is', null)
             .order('data');
         
         if (error) {
@@ -1478,17 +1495,29 @@ async function loadContasParceladas() {
         
         console.log('Lançamentos parcelados encontrados:', data?.length || 0);
         
-        // Agrupar por contrato
+        // Agrupar por descrição base (sem a parte da parcela)
         const contratos = {};
         data.forEach(lanc => {
-            if (!contratos[lanc.contrato_parcelado]) {
-                contratos[lanc.contrato_parcelado] = [];
+            // Extrair descrição base removendo " (X/Y)"
+            const descricaoBase = lanc.descricao.replace(/\s*\(\d+\/\d+\)$/, '');
+            const contratoKey = `${descricaoBase}_${lanc.categoria_id}_${lanc.tipo}`;
+            
+            if (!contratos[contratoKey]) {
+                contratos[contratoKey] = [];
             }
-            contratos[lanc.contrato_parcelado].push(lanc);
+            contratos[contratoKey].push(lanc);
         });
         
-        console.log('Contratos agrupados:', Object.keys(contratos).length);
-        displayContratosParcelados(contratos);
+        // Filtrar apenas grupos com mais de 1 parcela
+        const contratosFiltrados = {};
+        Object.keys(contratos).forEach(key => {
+            if (contratos[key].length > 1 || contratos[key][0].parcela_total > 1) {
+                contratosFiltrados[key] = contratos[key];
+            }
+        });
+        
+        console.log('Contratos agrupados:', Object.keys(contratosFiltrados).length);
+        displayContratosParcelados(contratosFiltrados);
     } catch (err) {
         console.error('Erro ao carregar contas parceladas:', err);
         const listEl = document.getElementById('contratos-parcelados');
@@ -1557,10 +1586,10 @@ function displayContratosParcelados(contratos) {
                         </div>
                         <div class="col-md-3">
                             <div class="btn-group w-100">
-                                <button class="btn btn-success btn-sm" onclick="quitarIntegral('${contratoId}', ${valorPendente})">
+                                <button class="btn btn-success btn-sm" onclick='quitarIntegral(${JSON.stringify(parcelas.filter(p => p.status === "pendente").map(p => p.id))}, ${valorPendente})'>
                                     <i class="bi bi-check-all"></i> Quitar Integral
                                 </button>
-                                <button class="btn btn-warning btn-sm" onclick="quitarParcial('${contratoId}')">
+                                <button class="btn btn-warning btn-sm" onclick='quitarParcial(${JSON.stringify(parcelas.filter(p => p.status === "pendente").map(p => p.id))})'>
                                     <i class="bi bi-check-circle"></i> Quitar Parcial
                                 </button>
                             </div>
@@ -1614,8 +1643,14 @@ function displayContratosParcelados(contratos) {
     listEl.innerHTML = html;
 }
 
-async function quitarIntegral(contratoId, valorPendente) {
-    console.log('Quitação integral - Contrato:', contratoId, 'Valor pendente:', valorPendente);
+async function quitarIntegral(parcelasIds, valorPendente) {
+    console.log('Quitação integral - IDs:', parcelasIds, 'Valor pendente:', valorPendente);
+    
+    if (!parcelasIds || parcelasIds.length === 0) {
+        showAlert('Nenhuma parcela pendente!', 'info');
+        return;
+    }
+    
     const desconto = parseFloat(prompt(`Valor pendente: R$ ${valorPendente.toFixed(2)}\n\nInforme o desconto (em R$):`, '0') || 0);
     
     if (desconto < 0 || desconto > valorPendente) {
@@ -1635,8 +1670,7 @@ async function quitarIntegral(contratoId, valorPendente) {
         const { error } = await supabase
             .from('lancamentos')
             .update({ status: 'pago' })
-            .eq('contrato_parcelado', contratoId)
-            .eq('status', 'pendente');
+            .in('id', parcelasIds);
         
         if (error) {
             console.error('Erro ao quitar:', error);
@@ -1652,9 +1686,15 @@ async function quitarIntegral(contratoId, valorPendente) {
     }
 }
 
-async function quitarParcial(contratoId) {
-    console.log('Quitação parcial - Contrato:', contratoId);
-    const quantas = parseInt(prompt('Quantas parcelas deseja quitar?', '1'));
+async function quitarParcial(parcelasIds) {
+    console.log('Quitação parcial - IDs disponíveis:', parcelasIds);
+    
+    if (!parcelasIds || parcelasIds.length === 0) {
+        showAlert('Nenhuma parcela pendente!', 'info');
+        return;
+    }
+    
+    const quantas = parseInt(prompt(`Quantas parcelas deseja quitar? (máx: ${parcelasIds.length})`, '1'));
     
     if (!quantas || quantas < 1) {
         console.log('Quitação parcial cancelada');
@@ -1666,8 +1706,7 @@ async function quitarParcial(contratoId) {
         const { data, error } = await supabase
             .from('lancamentos')
             .select('*')
-            .eq('contrato_parcelado', contratoId)
-            .eq('status', 'pendente')
+            .in('id', parcelasIds)
             .order('parcela_atual')
             .limit(quantas);
         
