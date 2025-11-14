@@ -724,6 +724,7 @@ async function criarLancamentoParcelado(dataInicial, descricao, categoria_id, va
 
 async function loadLancamentos() {
     try {
+        console.log('Carregando lançamentos...');
         const mes = document.getElementById('filtro-mes')?.value || mesAtual;
         const tipo = document.getElementById('filtro-tipo')?.value;
         const status = document.getElementById('filtro-status')?.value;
@@ -731,6 +732,8 @@ async function loadLancamentos() {
         
         const mesInicio = `${mes}-01`;
         const mesFim = `${mes}-31`;
+        
+        console.log('Filtros:', { mes, tipo, status, categoria_id });
         
         let query = supabase
             .from('lancamentos')
@@ -746,7 +749,12 @@ async function loadLancamentos() {
         
         const { data, error } = await query;
         
-        if (error) throw error;
+        if (error) {
+            console.error('Erro ao buscar lançamentos:', error);
+            throw error;
+        }
+        
+        console.log('Lançamentos carregados:', data?.length || 0);
         
         const listEl = document.getElementById('lancamentos-list');
         
@@ -810,7 +818,16 @@ async function loadLancamentos() {
         listEl.innerHTML = html;
     } catch (err) {
         console.error('Erro ao carregar lançamentos:', err);
-        showAlert('Erro ao carregar lançamentos', 'danger');
+        const listEl = document.getElementById('lancamentos-list');
+        if (listEl) {
+            listEl.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle"></i> Erro ao carregar lançamentos: ${err.message}
+                    <br><small>Verifique o console para mais detalhes</small>
+                </div>
+            `;
+        }
+        showAlert('Erro ao carregar lançamentos: ' + err.message, 'danger');
     }
 }
 
@@ -1181,18 +1198,33 @@ function getContasFixasHTML() {
 
 async function loadContasFixas() {
     try {
+        console.log('Carregando contas fixas para usuário:', currentUser);
         const { data, error } = await supabase
             .from('contas_fixas')
             .select('*, categorias(nome)')
             .eq('usuario_id', currentUser.id)
             .order('dia_vencimento');
         
-        if (error) throw error;
+        if (error) {
+            console.error('Erro na query Supabase (contas fixas):', error);
+            throw error;
+        }
         
+        console.log('Contas fixas carregadas:', data?.length || 0);
         contasFixas = data || [];
         displayContasFixas();
     } catch (err) {
         console.error('Erro ao carregar contas fixas:', err);
+        const listEl = document.getElementById('contas-fixas-list');
+        if (listEl) {
+            listEl.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle"></i> Erro ao carregar contas fixas: ${err.message}
+                    <br><small>Verifique o console para mais detalhes</small>
+                </div>
+            `;
+        }
+        showAlert('Erro ao carregar contas fixas: ' + err.message, 'danger');
     }
 }
 
@@ -1398,6 +1430,8 @@ function getContasParceladasHTML() {
 
 async function loadContasParceladas() {
     try {
+        console.log('Carregando contas parceladas para usuário:', currentUser);
+        
         const { data, error } = await supabase
             .from('lancamentos')
             .select('*')
@@ -1405,7 +1439,12 @@ async function loadContasParceladas() {
             .not('contrato_parcelado', 'is', null)
             .order('data');
         
-        if (error) throw error;
+        if (error) {
+            console.error('Erro na query Supabase (parceladas):', error);
+            throw error;
+        }
+        
+        console.log('Lançamentos parcelados encontrados:', data?.length || 0);
         
         // Agrupar por contrato
         const contratos = {};
@@ -1416,16 +1455,33 @@ async function loadContasParceladas() {
             contratos[lanc.contrato_parcelado].push(lanc);
         });
         
+        console.log('Contratos agrupados:', Object.keys(contratos).length);
         displayContratosParcelados(contratos);
     } catch (err) {
         console.error('Erro ao carregar contas parceladas:', err);
+        const listEl = document.getElementById('contratos-parcelados');
+        if (listEl) {
+            listEl.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle"></i> Erro ao carregar contas parceladas: ${err.message}
+                    <br><small>Verifique o console para mais detalhes</small>
+                </div>
+            `;
+        }
+        showAlert('Erro ao carregar contas parceladas: ' + err.message, 'danger');
     }
 }
 
 function displayContratosParcelados(contratos) {
     const listEl = document.getElementById('contratos-parcelados');
     
+    if (!listEl) {
+        console.error('Elemento contratos-parcelados não encontrado!');
+        return;
+    }
+    
     if (Object.keys(contratos).length === 0) {
+        console.log('Nenhum contrato parcelado para exibir');
         listEl.innerHTML = `
             <div class="alert alert-info">
                 <i class="bi bi-info-circle"></i> Nenhuma conta parcelada encontrada.
@@ -1434,6 +1490,7 @@ function displayContratosParcelados(contratos) {
         return;
     }
     
+    console.log('Montando HTML para', Object.keys(contratos).length, 'contratos');
     let html = '';
     
     for (const [contratoId, parcelas] of Object.entries(contratos)) {
@@ -1526,6 +1583,7 @@ function displayContratosParcelados(contratos) {
 }
 
 async function quitarIntegral(contratoId, valorPendente) {
+    console.log('Quitação integral - Contrato:', contratoId, 'Valor pendente:', valorPendente);
     const desconto = parseFloat(prompt(`Valor pendente: R$ ${valorPendente.toFixed(2)}\n\nInforme o desconto (em R$):`, '0') || 0);
     
     if (desconto < 0 || desconto > valorPendente) {
@@ -1541,27 +1599,38 @@ async function quitarIntegral(contratoId, valorPendente) {
     if (!confirm(msg)) return;
     
     try {
+        console.log('Executando quitação integral...');
         const { error } = await supabase
             .from('lancamentos')
             .update({ status: 'pago' })
             .eq('contrato_parcelado', contratoId)
             .eq('status', 'pendente');
         
-        if (error) throw error;
+        if (error) {
+            console.error('Erro ao quitar:', error);
+            throw error;
+        }
         
+        console.log('Quitação integral realizada com sucesso');
         showAlert('Quitação integral realizada com sucesso!', 'success');
         await loadContasParceladas();
     } catch (err) {
+        console.error('Erro ao quitar:', err);
         showAlert('Erro ao quitar: ' + err.message, 'danger');
     }
 }
 
 async function quitarParcial(contratoId) {
+    console.log('Quitação parcial - Contrato:', contratoId);
     const quantas = parseInt(prompt('Quantas parcelas deseja quitar?', '1'));
     
-    if (!quantas || quantas < 1) return;
+    if (!quantas || quantas < 1) {
+        console.log('Quitação parcial cancelada');
+        return;
+    }
     
     try {
+        console.log('Buscando', quantas, 'parcelas pendentes...');
         const { data, error } = await supabase
             .from('lancamentos')
             .select('*')
@@ -1570,7 +1639,12 @@ async function quitarParcial(contratoId) {
             .order('parcela_atual')
             .limit(quantas);
         
-        if (error) throw error;
+        if (error) {
+            console.error('Erro ao buscar parcelas:', error);
+            throw error;
+        }
+        
+        console.log('Parcelas encontradas:', data?.length || 0);
         
         if (data.length === 0) {
             showAlert('Nenhuma parcela pendente!', 'info');
@@ -1588,11 +1662,16 @@ async function quitarParcial(contratoId) {
             .update({ status: 'pago' })
             .in('id', ids);
         
-        if (updateError) throw updateError;
+        if (updateError) {
+            console.error('Erro ao atualizar parcelas:', updateError);
+            throw updateError;
+        }
         
+        console.log(data.length, 'parcelas quitadas com sucesso');
         showAlert(`${data.length} parcelas quitadas com sucesso!`, 'success');
         await loadContasParceladas();
     } catch (err) {
+        console.error('Erro ao quitar parcelas:', err);
         showAlert('Erro ao quitar parcelas: ' + err.message, 'danger');
     }
 }
