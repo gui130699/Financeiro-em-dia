@@ -1024,56 +1024,73 @@ function displayCategorias() {
     const despesas = categorias.filter(c => c.tipo === 'despesa');
     const receitas = categorias.filter(c => c.tipo === 'receita');
     
-    let html = '';
+    let html = '<div class="table-responsive">';
     
     if (despesas.length > 0) {
-        html += '<h4 class="mt-3"><i class="bi bi-arrow-down-circle text-danger"></i> Despesas</h4><div class="row">';
+        html += `
+            <h4 class="mt-3"><i class="bi bi-arrow-down-circle text-danger"></i> Despesas</h4>
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th style="width: 200px;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
         despesas.forEach(cat => {
             html += `
-                <div class="col-md-4 mb-3">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">${cat.nome}</h5>
-                            <div class="btn-group btn-group-sm">
-                                <button class="btn btn-outline-primary" onclick="editarCategoria(${cat.id})">
-                                    <i class="bi bi-pencil"></i> Editar
-                                </button>
-                                <button class="btn btn-outline-danger" onclick="deleteCategoria(${cat.id})">
-                                    <i class="bi bi-trash"></i> Excluir
-                                </button>
-                            </div>
+                <tr>
+                    <td><strong>${cat.nome}</strong></td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-primary" onclick="editarCategoria(${cat.id})" title="Editar">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-outline-danger" onclick="deleteCategoria(${cat.id})" title="Excluir">
+                                <i class="bi bi-trash"></i>
+                            </button>
                         </div>
-                    </div>
-                </div>
+                    </td>
+                </tr>
             `;
         });
-        html += '</div>';
+        html += '</tbody></table>';
     }
     
     if (receitas.length > 0) {
-        html += '<h4 class="mt-3"><i class="bi bi-arrow-up-circle text-success"></i> Receitas</h4><div class="row">';
+        html += `
+            <h4 class="mt-4"><i class="bi bi-arrow-up-circle text-success"></i> Receitas</h4>
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th style="width: 200px;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
         receitas.forEach(cat => {
             html += `
-                <div class="col-md-4 mb-3">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">${cat.nome}</h5>
-                            <div class="btn-group btn-group-sm">
-                                <button class="btn btn-outline-primary" onclick="editarCategoria(${cat.id})">
-                                    <i class="bi bi-pencil"></i> Editar
-                                </button>
-                                <button class="btn btn-outline-danger" onclick="deleteCategoria(${cat.id})">
-                                    <i class="bi bi-trash"></i> Excluir
-                                </button>
-                            </div>
+                <tr>
+                    <td><strong>${cat.nome}</strong></td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-primary" onclick="editarCategoria(${cat.id})" title="Editar">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-outline-danger" onclick="deleteCategoria(${cat.id})" title="Excluir">
+                                <i class="bi bi-trash"></i>
+                            </button>
                         </div>
-                    </div>
-                </div>
+                    </td>
+                </tr>
             `;
         });
-        html += '</div>';
+        html += '</tbody></table>';
     }
     
+    html += '</div>';
     listEl.innerHTML = html;
 }
 
