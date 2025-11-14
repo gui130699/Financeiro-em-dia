@@ -345,8 +345,11 @@ function getHomeHTML() {
 
 async function loadDashboard() {
     try {
+        console.log('Carregando dashboard para usuário:', currentUser);
         const mesInicio = `${mesAtual}-01`;
         const mesFim = `${mesAtual}-31`;
+        
+        console.log('Período:', mesInicio, 'até', mesFim);
         
         const { data, error } = await supabase
             .from('lancamentos')
@@ -355,7 +358,12 @@ async function loadDashboard() {
             .gte('data', mesInicio)
             .lte('data', mesFim);
         
-        if (error) throw error;
+        if (error) {
+            console.error('Erro na query Supabase:', error);
+            throw error;
+        }
+        
+        console.log('Lançamentos carregados:', data?.length || 0);
         
         const receitas = data.filter(l => l.tipo === 'receita' && l.status === 'pago');
         const receitasPendentes = data.filter(l => l.tipo === 'receita' && l.status === 'pendente');
@@ -430,12 +438,24 @@ async function loadDashboard() {
         await loadUltimosLancamentos();
     } catch (err) {
         console.error('Erro ao carregar dashboard:', err);
-        showAlert('Erro ao carregar dashboard', 'danger');
+        const dashboardEl = document.getElementById('dashboard-content');
+        if (dashboardEl) {
+            dashboardEl.innerHTML = `
+                <div class="col-12">
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle"></i> Erro ao carregar dashboard: ${err.message}
+                        <br><small>Verifique o console para mais detalhes</small>
+                    </div>
+                </div>
+            `;
+        }
+        showAlert('Erro ao carregar dashboard: ' + err.message, 'danger');
     }
 }
 
 async function loadUltimosLancamentos() {
     try {
+        console.log('Carregando últimos lançamentos...');
         const { data, error } = await supabase
             .from('lancamentos')
             .select('*, categorias(nome)')
@@ -443,7 +463,12 @@ async function loadUltimosLancamentos() {
             .order('data', { ascending: false })
             .limit(10);
         
-        if (error) throw error;
+        if (error) {
+            console.error('Erro ao buscar últimos lançamentos:', error);
+            throw error;
+        }
+        
+        console.log('Últimos lançamentos encontrados:', data?.length || 0);
         
         if (data.length === 0) {
             document.getElementById('ultimos-lancamentos').innerHTML = `
@@ -474,6 +499,14 @@ async function loadUltimosLancamentos() {
         document.getElementById('ultimos-lancamentos').innerHTML = html;
     } catch (err) {
         console.error('Erro ao carregar últimos lançamentos:', err);
+        const ultimosEl = document.getElementById('ultimos-lancamentos');
+        if (ultimosEl) {
+            ultimosEl.innerHTML = `
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle"></i> Erro ao carregar últimos lançamentos: ${err.message}
+                </div>
+            `;
+        }
     }
 }
 
