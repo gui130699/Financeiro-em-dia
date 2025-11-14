@@ -1,7 +1,7 @@
 // ============================================
 // FINANCEIRO EM DIA - PWA
 // Todas as funcionalidades do Flask convertidas para JavaScript
-// Versão: 2025-11-14 21:45 - Colunas explícitas nas queries (sem parcela_total)
+// Versão: 2025-11-14 22:00 - Botão toggle status nas ações
 // ============================================
 
 // Configuração do Supabase
@@ -803,12 +803,14 @@ async function loadLancamentos() {
                     <td class="${classeValor}"><strong>R$ ${valor}</strong></td>
                     <td><span class="badge ${lanc.tipo === 'receita' ? 'bg-success' : 'bg-danger'}">${lanc.tipo}</span></td>
                     <td>
-                        <button class="btn btn-sm ${lanc.status === 'pago' ? 'btn-success' : 'btn-warning'}" 
-                                onclick="toggleStatus(${lanc.id}, '${lanc.status}')">
-                            ${lanc.status === 'pago' ? '<i class="bi bi-check-circle"></i> Pago' : '<i class="bi bi-clock"></i> Pendente'}
-                        </button>
+                        <span class="badge ${lanc.status === 'pago' ? 'bg-success' : 'bg-warning'}">${lanc.status === 'pago' ? 'Pago' : 'Pendente'}</span>
                     </td>
                     <td>
+                        <button class="btn btn-sm ${lanc.status === 'pago' ? 'btn-success' : 'btn-warning'}" 
+                                onclick="toggleStatus(${lanc.id}, '${lanc.status}')" 
+                                title="${lanc.status === 'pago' ? 'Marcar como Pendente' : 'Marcar como Pago'}">
+                            <i class="bi bi-${lanc.status === 'pago' ? 'arrow-counterclockwise' : 'check-circle'}"></i>
+                        </button>
                         <button class="btn btn-sm btn-primary" onclick="editarLancamento(${lanc.id})" title="Editar">
                             <i class="bi bi-pencil"></i>
                         </button>
