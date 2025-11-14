@@ -385,38 +385,38 @@ async function loadDashboard() {
         
         document.getElementById('dashboard-content').innerHTML = `
             <div class="col-md-6 col-lg-3 mb-3">
-                <div class="card text-white bg-success">
+                <div class="card">
                     <div class="card-body">
-                        <h6 class="card-title"><i class="bi bi-arrow-up-circle"></i> Receitas Recebidas</h6>
-                        <h3>R$ ${totalReceitas.toFixed(2)}</h3>
-                        <small>${receitas.length} lançamentos</small>
+                        <h6 class="card-title text-success"><i class="bi bi-arrow-up-circle"></i> Receitas Recebidas</h6>
+                        <h4>R$ ${totalReceitas.toFixed(2)}</h4>
+                        <small class="text-muted">${receitas.length} lançamentos</small>
                     </div>
                 </div>
             </div>
             <div class="col-md-6 col-lg-3 mb-3">
-                <div class="card text-white bg-danger">
+                <div class="card">
                     <div class="card-body">
-                        <h6 class="card-title"><i class="bi bi-arrow-down-circle"></i> Despesas Pagas</h6>
-                        <h3>R$ ${totalDespesas.toFixed(2)}</h3>
-                        <small>${despesas.length} lançamentos</small>
+                        <h6 class="card-title text-danger"><i class="bi bi-arrow-down-circle"></i> Despesas Pagas</h6>
+                        <h4>R$ ${totalDespesas.toFixed(2)}</h4>
+                        <small class="text-muted">${despesas.length} lançamentos</small>
                     </div>
                 </div>
             </div>
             <div class="col-md-6 col-lg-3 mb-3">
-                <div class="card text-white ${saldo >= 0 ? 'bg-primary' : 'bg-warning'}">
+                <div class="card">
                     <div class="card-body">
-                        <h6 class="card-title"><i class="bi bi-wallet2"></i> Saldo Atual</h6>
-                        <h3>R$ ${saldo.toFixed(2)}</h3>
-                        <small>${saldo >= 0 ? 'Positivo' : 'Negativo'}</small>
+                        <h6 class="card-title ${saldo >= 0 ? 'text-primary' : 'text-warning'}"><i class="bi bi-wallet2"></i> Saldo Atual</h6>
+                        <h4 class="${saldo >= 0 ? 'text-primary' : 'text-warning'}">R$ ${saldo.toFixed(2)}</h4>
+                        <small class="text-muted">${saldo >= 0 ? 'Positivo' : 'Negativo'}</small>
                     </div>
                 </div>
             </div>
             <div class="col-md-6 col-lg-3 mb-3">
-                <div class="card text-white bg-info">
+                <div class="card">
                     <div class="card-body">
-                        <h6 class="card-title"><i class="bi bi-calendar-check"></i> Saldo Previsto</h6>
-                        <h3>R$ ${saldoPrevisto.toFixed(2)}</h3>
-                        <small>Com pendentes</small>
+                        <h6 class="card-title text-info"><i class="bi bi-calendar-check"></i> Saldo Previsto</h6>
+                        <h4>R$ ${saldoPrevisto.toFixed(2)}</h4>
+                        <small class="text-muted">Com pendentes</small>
                     </div>
                 </div>
             </div>
