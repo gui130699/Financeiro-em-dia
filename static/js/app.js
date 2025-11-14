@@ -1,7 +1,7 @@
 // ============================================
 // FINANCEIRO EM DIA - PWA
 // Todas as funcionalidades do Flask convertidas para JavaScript
-// Versão: 2025-11-14 22:00 - Botão toggle status nas ações
+// Versão: 2025-11-14 22:15 - Coluna Parcelas no grid (formato X/Y)
 // ============================================
 
 // Configuração do Supabase
@@ -713,7 +713,8 @@ async function criarLancamentoParcelado(dataInicial, descricao, categoria_id, va
             tipo,
             status: 'pendente',
             conta_fixa_id: null,
-            parcela_atual: i + 1
+            parcela_atual: i + 1,
+            total_parcelas: parcelas
         });
     }
     
@@ -783,6 +784,7 @@ async function loadLancamentos() {
                             <th>Categoria</th>
                             <th>Valor</th>
                             <th>Tipo</th>
+                            <th>Parcelas</th>
                             <th>Status</th>
                             <th>Ações</th>
                         </tr>
@@ -793,15 +795,17 @@ async function loadLancamentos() {
         data.forEach(lanc => {
             const valor = parseFloat(lanc.valor).toFixed(2);
             const classeValor = lanc.tipo === 'receita' ? 'text-success' : 'text-danger';
-            const parcelaInfo = lanc.parcela_atual ? ` (Parcela ${lanc.parcela_atual})` : '';
+            const descricaoBase = lanc.descricao.split(' (')[0]; // Remove info de parcela da descrição
+            const parcelaDisplay = lanc.parcela_atual && lanc.total_parcelas ? `${lanc.parcela_atual}/${lanc.total_parcelas}` : '-';
             
             html += `
                 <tr>
                     <td>${formatDate(lanc.data)}</td>
-                    <td>${lanc.descricao}${parcelaInfo}</td>
+                    <td>${descricaoBase}</td>
                     <td><span class="badge bg-secondary">${lanc.categorias ? lanc.categorias.nome : '-'}</span></td>
                     <td class="${classeValor}"><strong>R$ ${valor}</strong></td>
                     <td><span class="badge ${lanc.tipo === 'receita' ? 'bg-success' : 'bg-danger'}">${lanc.tipo}</span></td>
+                    <td><span class="badge bg-info">${parcelaDisplay}</span></td>
                     <td>
                         <span class="badge ${lanc.status === 'pago' ? 'bg-success' : 'bg-warning'}">${lanc.status === 'pago' ? 'Pago' : 'Pendente'}</span>
                     </td>
