@@ -1,7 +1,7 @@
 // ============================================
 // FINANCEIRO EM DIA - PWA
 // Todas as funcionalidades do Flask convertidas para JavaScript
-// Versão: 2025-11-14 20:00 - Fix contas parceladas
+// Versão: 2025-11-14 20:30 - Removido contrato_parcelado do banco
 // ============================================
 
 // Configuração do Supabase
@@ -683,14 +683,11 @@ async function handleAddLancamento(event) {
                     categoria_id,
                     valor,
                     tipo,
-                    status,
-                    conta_fixa_id: null,
-                    parcela_atual: null,
-                    parcela_total: null,
-                    contrato_parcelado: null
-                }]);
-            
-            if (error) throw error;
+                status,
+                conta_fixa_id: null,
+                parcela_atual: null,
+                parcela_total: null
+            }]);            if (error) throw error;
         }
         
         showAlert('Lançamento adicionado com sucesso!', 'success');
@@ -722,8 +719,7 @@ async function criarLancamentoParcelado(dataInicial, descricao, categoria_id, va
             status: i === 0 ? status : 'pendente',
             conta_fixa_id: null,
             parcela_atual: i + 1,
-            parcela_total: parcelas,
-            contrato_parcelado: contratoId
+            parcela_total: parcelas
         });
     }
     
