@@ -1,7 +1,7 @@
 // ============================================
 // FINANCEIRO EM DIA - PWA
 // Todas as funcionalidades do Flask convertidas para JavaScript
-// Versão: 2025-11-14 23:00 - Quitação com desconto e modal de detalhes
+// Versão: 2025-11-14 23:15 - Parcelados quitados somem da tela
 // ============================================
 
 // Configuração do Supabase
@@ -1490,10 +1490,12 @@ async function loadContasParceladas() {
     try {
         console.log('Carregando contas parceladas para usuário:', currentUser);
         
+        // Buscar apenas parcelas PENDENTES
         const { data, error } = await supabase
             .from('lancamentos')
             .select('id, usuario_id, data, descricao, categoria_id, valor, tipo, status, conta_fixa_id, parcela_atual')
             .eq('usuario_id', currentUser.id)
+            .eq('status', 'pendente')
             .not('parcela_atual', 'is', null)
             .order('data');
         
@@ -1502,7 +1504,7 @@ async function loadContasParceladas() {
             throw error;
         }
         
-        console.log('Lançamentos parcelados encontrados:', data?.length || 0);
+        console.log('Lançamentos parcelados pendentes encontrados:', data?.length || 0);
         
         // Agrupar por descrição base (sem a parte da parcela)
         const contratos = {};
@@ -1517,16 +1519,9 @@ async function loadContasParceladas() {
             contratos[contratoKey].push(lanc);
         });
         
-        // Filtrar apenas grupos com mais de 1 parcela
-        const contratosFiltrados = {};
-        Object.keys(contratos).forEach(key => {
-            if (contratos[key].length > 1 || contratos[key][0].parcela_atual > 0) {
-                contratosFiltrados[key] = contratos[key];
-            }
-        });
-        
-        console.log('Contratos agrupados:', Object.keys(contratosFiltrados).length);
-        displayContratosParcelados(contratosFiltrados);
+        // Todos os contratos já têm pelo menos 1 parcela pendente (pela query)
+        console.log('Contratos com parcelas pendentes:', Object.keys(contratos).length);
+        displayContratosParcelados(contratos);
     } catch (err) {
         console.error('Erro ao carregar contas parceladas:', err);
         const listEl = document.getElementById('contratos-parcelados');
