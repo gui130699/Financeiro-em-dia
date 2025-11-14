@@ -346,8 +346,13 @@ function getHomeHTML() {
 async function loadDashboard() {
     try {
         console.log('Carregando dashboard para usuário:', currentUser);
+        
+        // Calcular o último dia do mês corretamente
+        const [ano, mes] = mesAtual.split('-').map(Number);
+        const ultimoDia = new Date(ano, mes, 0).getDate();
+        
         const mesInicio = `${mesAtual}-01`;
-        const mesFim = `${mesAtual}-31`;
+        const mesFim = `${mesAtual}-${String(ultimoDia).padStart(2, '0')}`;
         
         console.log('Período:', mesInicio, 'até', mesFim);
         
@@ -360,6 +365,7 @@ async function loadDashboard() {
         
         if (error) {
             console.error('Erro na query Supabase:', error);
+            console.error('Detalhes do erro:', JSON.stringify(error, null, 2));
             throw error;
         }
         
@@ -438,18 +444,23 @@ async function loadDashboard() {
         await loadUltimosLancamentos();
     } catch (err) {
         console.error('Erro ao carregar dashboard:', err);
+        console.error('Stack trace:', err.stack);
+        console.error('Erro completo:', JSON.stringify(err, null, 2));
+        
         const dashboardEl = document.getElementById('dashboard-content');
         if (dashboardEl) {
+            const errorMsg = err.message || err.msg || JSON.stringify(err);
             dashboardEl.innerHTML = `
                 <div class="col-12">
                     <div class="alert alert-danger">
-                        <i class="bi bi-exclamation-triangle"></i> Erro ao carregar dashboard: ${err.message}
-                        <br><small>Verifique o console para mais detalhes</small>
+                        <i class="bi bi-exclamation-triangle"></i> <strong>Erro ao carregar dashboard</strong>
+                        <br>${errorMsg}
+                        <br><small>Verifique o console (F12) para mais detalhes</small>
                     </div>
                 </div>
             `;
         }
-        showAlert('Erro ao carregar dashboard: ' + err.message, 'danger');
+        showAlert('Erro ao carregar dashboard', 'danger');
     }
 }
 
@@ -730,10 +741,14 @@ async function loadLancamentos() {
         const status = document.getElementById('filtro-status')?.value;
         const categoria_id = document.getElementById('filtro-categoria')?.value;
         
-        const mesInicio = `${mes}-01`;
-        const mesFim = `${mes}-31`;
+        // Calcular o último dia do mês corretamente
+        const [ano, mesNum] = mes.split('-').map(Number);
+        const ultimoDia = new Date(ano, mesNum, 0).getDate();
         
-        console.log('Filtros:', { mes, tipo, status, categoria_id });
+        const mesInicio = `${mes}-01`;
+        const mesFim = `${mes}-${String(ultimoDia).padStart(2, '0')}`;
+        
+        console.log('Filtros:', { mes, tipo, status, categoria_id, mesInicio, mesFim });
         
         let query = supabase
             .from('lancamentos')
