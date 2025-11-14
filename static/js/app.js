@@ -1,7 +1,7 @@
 // ============================================
 // FINANCEIRO EM DIA - PWA
 // Todas as funcionalidades do Flask convertidas para JavaScript
-// Versão: 2025-11-14 21:15 - Categorias mostram tipo entre parênteses
+// Versão: 2025-11-14 21:30 - Removido parcela_total (não existe no banco)
 // ============================================
 
 // Configuração do Supabase
@@ -679,8 +679,7 @@ async function handleAddLancamento(event) {
                     tipo,
                     status: 'pendente',
                     conta_fixa_id: null,
-                    parcela_atual: null,
-                    parcela_total: null
+                    parcela_atual: null
                 }]);
             
             if (error) throw error;
@@ -714,8 +713,7 @@ async function criarLancamentoParcelado(dataInicial, descricao, categoria_id, va
             tipo,
             status: 'pendente',
             conta_fixa_id: null,
-            parcela_atual: i + 1,
-            parcela_total: parcelas
+            parcela_atual: i + 1
         });
     }
     
@@ -795,7 +793,7 @@ async function loadLancamentos() {
         data.forEach(lanc => {
             const valor = parseFloat(lanc.valor).toFixed(2);
             const classeValor = lanc.tipo === 'receita' ? 'text-success' : 'text-danger';
-            const parcelaInfo = lanc.parcela_atual ? ` (${lanc.parcela_atual}/${lanc.parcela_total})` : '';
+            const parcelaInfo = lanc.parcela_atual ? ` (Parcela ${lanc.parcela_atual})` : '';
             
             html += `
                 <tr>
@@ -1512,7 +1510,7 @@ async function loadContasParceladas() {
         // Filtrar apenas grupos com mais de 1 parcela
         const contratosFiltrados = {};
         Object.keys(contratos).forEach(key => {
-            if (contratos[key].length > 1 || contratos[key][0].parcela_total > 1) {
+            if (contratos[key].length > 1 || contratos[key][0].parcela_atual > 0) {
                 contratosFiltrados[key] = contratos[key];
             }
         });
@@ -1614,7 +1612,7 @@ function displayContratosParcelados(contratos) {
         parcelas.forEach(parcela => {
             html += `
                 <tr class="${parcela.status === 'pago' ? 'table-success' : ''}">
-                    <td>${parcela.parcela_atual}/${parcela.parcela_total}</td>
+                    <td>Parcela ${parcela.parcela_atual}</td>
                     <td>${formatDate(parcela.data)}</td>
                     <td>R$ ${parseFloat(parcela.valor).toFixed(2)}</td>
                     <td>
