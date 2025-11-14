@@ -1,7 +1,7 @@
 // ============================================
 // FINANCEIRO EM DIA - PWA
 // Todas as funcionalidades do Flask convertidas para JavaScript
-// Versão: 2025-11-14 21:30 - Removido parcela_total (não existe no banco)
+// Versão: 2025-11-14 21:45 - Colunas explícitas nas queries (sem parcela_total)
 // ============================================
 
 // Configuração do Supabase
@@ -359,7 +359,7 @@ async function loadDashboard() {
         
         const { data, error } = await supabase
             .from('lancamentos')
-            .select('*')
+            .select('id, usuario_id, data, descricao, categoria_id, valor, tipo, status, conta_fixa_id, parcela_atual')
             .eq('usuario_id', currentUser.id)
             .gte('data', mesInicio)
             .lte('data', mesFim);
@@ -859,7 +859,7 @@ async function editarLancamento(id) {
     try {
         const { data, error } = await supabase
             .from('lancamentos')
-            .select('*')
+            .select('id, usuario_id, data, descricao, categoria_id, valor, tipo, status, conta_fixa_id, parcela_atual')
             .eq('id', id)
             .single();
         
@@ -1482,7 +1482,7 @@ async function loadContasParceladas() {
         
         const { data, error } = await supabase
             .from('lancamentos')
-            .select('*')
+            .select('id, usuario_id, data, descricao, categoria_id, valor, tipo, status, conta_fixa_id, parcela_atual')
             .eq('usuario_id', currentUser.id)
             .not('parcela_atual', 'is', null)
             .order('data');
