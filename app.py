@@ -141,7 +141,7 @@ def home():
     ano = request.args.get('ano', datetime.now().year, type=int)
     
     # Obter totais do mês
-    totais = models.obter_totais_mes(user_id, ano, mes)
+    totais = models.calcular_resumo_mes(user_id, ano, mes)
     
     # Obter lançamentos do mês
     lancamentos = models.listar_lancamentos_mes(user_id, ano, mes)
